@@ -1,0 +1,11 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "mongo": {
+    "database": "xcomponents",
+    "name": "mongo",
+    "connector": "mongodb"
+  }
+}

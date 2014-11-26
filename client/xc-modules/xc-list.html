@@ -1,0 +1,18 @@
+<div class="panel">
+
+
+	<div class="list-group" lr-infinite-scroll="loadMore">
+
+		<a class="list-group-item" ng-repeat="item in items | orderBy : orderBy : orderReversed" ng-click="select(item)"
+			ng-class="{'active' : selected == item}">
+
+			<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
+
+			<p class="list-group-item-text">{{item[detailsField]}}</p>
+			<!--{{$index}}-->
+
+		</a>
+
+	</div>
+
+</div>

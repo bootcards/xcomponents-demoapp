@@ -1,0 +1,84 @@
+<!doctype html>
+<html ng-app="xcontrols">
+
+<head>
+	<title>XControls</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- styles -->
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/styles.css">
+
+	<!-- javascript -->
+	<script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
+	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
+
+	<script src="xc-modules/xc-main.js"></script>
+	<script src="xc-modules/xc-header.js"></script>
+	<script src="xc-modules/xc-footer.js"></script>
+	<script src="xc-modules/xc-summary.js"></script>
+	<script src="xc-modules/xc-summary-item.js"></script>
+
+</head>
+
+<body ng-controller="xcController" class="hidden">
+
+	<xc-header title="XControls"></xc-header>
+	
+	<div class="container bootcards-container">
+
+		<div class="row">
+
+			<div class="bootcards-cards">
+
+				<div class="col-sm-6">
+
+					<xc-summary title="Dashboard">
+						<xc-summary-item title="Contacts" count="12" icon="fa-users" target="contacts.html"></xc-summary-item>
+						<xc-summary-item title="Check" count="6" icon="fa-check" target="contacts-domino.html"></xc-summary-item>
+						<xc-summary-item title="Activities By Dept" icon="fa-tasks" target="contacts-domino.html"></xc-summary-item>
+						<xc-summary-item title="Windows" count="4" icon="fa-windows" target="contacts-domino.html"></xc-summary-item>
+
+						<!--bc todo: bootcards-summary panel-body > row > div doesn't work because of the transclude-->
+					</xc-summary>
+					
+				</div>
+				<div class="col-sm-6">
+					
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<xc-footer>
+		<a href="/index.html" class="btn btn-default">
+			<i class="fa fa-2x fa-dashboard"></i>
+			Dashboard
+		</a>
+		<a href="/contacts.html" class="btn btn-default">
+			<i class="fa fa-2x fa-users"></i>
+			Contacts
+		</a> 
+		<a href="/contacts-domino.html" class="btn btn-default">
+			<i class="fa fa-2x fa-users"></i>
+			Contacts (D)
+		</a>      
+	</xc-footer>
+	
+	<!-- jQuery / bootstrap.js / bootcards.js -->
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower_components/fastclick/lib/fastclick.js"></script>
+
+	<script>
+		$(function() {
+		    FastClick.attach(document.body);
+		});
+	</script>
+
+<!-- 	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
+
+</body></html>
