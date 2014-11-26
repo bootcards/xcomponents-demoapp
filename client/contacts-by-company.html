@@ -26,14 +26,15 @@
 		var xcontrols = {
 			modelName : 'Contact',
 			fields : [
-				{ field: "LastName", label:"Lastname", required: true},
-				{ field: "FirstName", label:"Firstname"},
-				{ field : "City" },
-				{ field : "Company" },
-				{ field : "Email" },
-				{ field : "Phone"}
+				{ label : "First name" , field:"firstName", required: true, read: false},
+				{ label : "Last name" , field:"lastName", required: true, read: false},
+				{ field : "name", edit: false, formula : ['firstName', 'lastName'] }, 
+				{ field : "city" },
+				{ field : "company" },
+				{ label : "Email" , field:"email", type:"email", required: true},
+				{ label : "Phone", field:"phone"}
 			],
-			orderBy : 'LastName',
+			orderBy : 'lastName',
 			orderReversed : false,
 			imageBase : 'http://demo.linqed.eu/unplugged/xcontrols.nsf/'
 		};
@@ -46,18 +47,19 @@
 	<xc-header title="Contacts"></xc-header>
 
 	<xc-list 
-		list-width="3" 
+		list-width="4" 
 		allow-add="true"
 		group-by="company"
-		url="https://demo.linqed.eu/unplugged/xcontrols.nsf/api/data/collections/unid/3E1671AA6E9236BD80257CD8002C3127"
-		summary-field="LastName"
-		details-field="Company"
-		image-field="$0">
+		url="/api/Contacts"
+		summary-field="name"
+		details-field="company"
+		image-field="thumbnailUrl"
+		type="categorised">
 		
 		<xc-card url="/api/Contacts/:id" 
 			default-text="Select a contact from the list"></xc-card>
 
-		<xc-image source-field="$0" title="Profile picture"></xc-image>
+		<xc-image source-field="thumbnailUrl" title="Profile picture"></xc-image>
 
 	</xc-list>
 

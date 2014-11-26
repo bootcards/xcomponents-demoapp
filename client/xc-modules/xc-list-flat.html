@@ -28,14 +28,16 @@
 
 			<div class="list-group">
 				
-				<!-- <a class="list-group-item" ng-repeat="item in items | orderBy : orderBy : orderReversed | filter : filter" ng-click="select(item)"
-					ng-class="{'active' : selected == item}"> -->
-				<a class="list-group-item animate-repeat" ng-repeat="item in itemsPage | filter : filter as results" ng-click="select(item)"
+				<a class="list-group-item animate-repeat" ng-repeat="item in itemsPage" ng-click="select(item)"
 					ng-class="{'active' : selected == item}">
+
+					<img 
+						class="img-rounded pull-left" 
+						ng-src="{{ imageBase + item[imageField] }}" />
 
 					<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
 
-					<p class="list-group-item-text">{{item[detailsField]}} {{$index}}</p>
+					<p class="list-group-item-text">{{item[detailsField]}}</p>
 					
 				</a>
 
@@ -76,7 +78,7 @@
 					</div>
 				
 					<div class="btn-group pull-right">
-						<button class="btn btn-success" data-dismiss="modal" type="button" ng-click="saveNewItem(cardNewForm)">
+						<button class="btn btn-success" type="button" ng-click="saveNewItem(cardNewForm, '#addModal')">
 							Save
 						</button>
 					</div>
@@ -85,7 +87,7 @@
 				
 				<div class="modal-body">
 
-					<div class="form-group" ng-repeat="field in fields" ng-class="{ 'has-error': cardNewForm[field.field].$invalid }">
+					<div class="form-group" ng-repeat="field in fieldsEdit" ng-class="{ 'has-error': cardNewForm[field.field].$invalid }">
 
 						<label class="col-xs-3 control-label">{{field.label}}</label>
 						<div class="col-xs-9">

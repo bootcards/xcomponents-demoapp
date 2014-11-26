@@ -1,0 +1,114 @@
+ <div class='container bootcards-container'>
+
+ <div class='row'>
+
+ 	<div class='bootcards-list {{colLeft}}'>
+
+		<div class="panel">
+
+			<!--add a new item-->
+			<div class="panel-body">
+				<div class="search-form">
+					<div class="row">
+					    <div class="col-xs-9">
+					      <div class="form-group">
+						      <input type="text" class="form-control" ng-model="filter" placeholder="Search {{modelName}}...">
+						      <i class="fa fa-search"></i>
+					      </div>
+					    </div>
+					    <div class="col-xs-3">
+							<a class="btn btn-primary btn-block" href="#" data-toggle="modal" data-target="#addModal">
+								<i class="fa fa-plus"></i> 
+								<span>Add</span>
+							</a>
+					    </div>
+					</div>						    
+				</div>				
+			</div>
+
+			<div class="list-group">
+
+				<div ng-repeat="group in groups">
+					<div class="list-group-item animate-repeat bootcards-list-subheading" >
+						{{group}}
+					</div>
+				
+					<a class="list-group-item" ng-repeat="item in itemsPage" ng-click="select(item)"
+						ng-class="{'active' : selected == item}">
+
+						<img 
+							class="img-rounded pull-left" 
+							ng-src="{{ imageBase + item[imageField] }}" />
+
+						<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
+
+						<p class="list-group-item-text">{{item[detailsField]}}</p>
+						
+					</a>
+
+				</div>
+
+				<div class="list-group-item" ng-show="isLoading">
+					<i class="fa fa-spinner fa-spin fa-fw" style="margin-right:0; opacity: 1;"></i>Loading...
+				</div>
+
+				<div class="list-group-item" ng-show="!isLoading && hasMore" ng-click="loadMore()">
+					Load more...
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class='bootcards-cards {{colRight}}'>
+
+		<ng-transclude></ng-transclude>
+
+	</div>
+
+ </div>
+
+<!--modal to add details-->
+<form class="form-horizontal" name="cardNewForm" role="form">
+	<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+			
+				<div class="modal-header">
+
+					<div class="btn-group pull-left">
+						<button class="btn btn-danger" data-dismiss="modal" type="button">
+							Cancel
+						</button>
+					</div>
+				
+					<div class="btn-group pull-right">
+						<button class="btn btn-success" type="button" ng-click="saveNewItem(cardNewForm, '#addModal')">
+							Save
+						</button>
+					</div>
+					<h4 class="modal-title">Add {{modelName}}</h4>		
+				</div>
+				
+				<div class="modal-body">
+
+					<div class="form-group" ng-repeat="field in fieldsEdit" ng-class="{ 'has-error': cardNewForm[field.field].$invalid }">
+
+						<label class="col-xs-3 control-label">{{field.label}}</label>
+						<div class="col-xs-9">
+							<input class="form-control" name="{{field.field}}" ng-model="newItem[field.field]" ng-required="field.required" />
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>	
+</form>
+
+</div>
+

@@ -6,105 +6,98 @@ var app = angular.module('xcontrols');
 
 app.directive('xcCard', function($rootScope, $resource) {
 
-  return {
+	return {
 
-    scope : {
-      item : '=',
-      url : '@'
-    },
+		scope : {
+			item : '=',
+			url : '@',
+			defaultText : '@'
+		},
 
-    replace : true,
-    restrict : 'AE',
-    templateUrl: 'xc-modules/xc-card.html',
+		replace : true,
+		restrict : 'E',
+		templateUrl: 'xc-modules/xc-card.html',
 
-    controller : function($scope) {
+		controller : function($scope, xcUtils) {
 
-      console.log('card scope');
+			$scope.selectedItem = null;
+			$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
+			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
+			$scope.modelName = xcUtils.getConfig('modelName');
 
-      $scope.selectedItem = {};
-      $scope.isNew = true;
+			$rootScope.$on('selectItemEvent', function(ev, item) {
+				$scope.selectedItem = item;
+			});
 
-      var fields = xcontrols.fields;
+			$scope.saveItem = function(form, modalId) {
 
-      //add labels if not specified (proper cased field name)
-      for (var i=0; i<fields.length; i++) {
-        if ( !fields[i].hasOwnProperty('label') ) {
-          fields[i].label = fields[i].field.substring(0,1).toUpperCase() + fields[i].field.substring(1);
-        }
-        //set 'show in read mode' property
-        if ( !fields[i].hasOwnProperty('read') ) {
-          fields[i].read = true;
-        }
-        //set 'show in edit mode' property
-        if ( !fields[i].hasOwnProperty('edit') ) {
-          fields[i].edit = true;
-        }
-      }
+				if (!form.$valid) { alert('Please fill in all required fields'); return; }
 
-      $scope.fields = xcontrols.fields;
-      $scope.modelName = xcontrols.modelName;
+				xcUtils.calculateFormFields($scope.selectedItem);
 
-      $rootScope.$on('selectItemEvent', function(ev, item) {
-        $scope.isNew = (item === null ? true : false);
-        $scope.selectedItem = (item === null ? {} : item);
-      });
+				var Card = $resource($scope.url, 
+					{
+						id : $scope.selectedItem.id
+					},
+					{
+						update : {
+							method: 'PUT'
+						}
+					}
+				 );
 
-      $scope.saveItem = function(form) {
-        if (!form.$valid) { return; }
+				Card.update($scope.selectedItem).$promise
+				.then( function(res) {
 
-        var Card = $resource($scope.url, 
-          {
-            id:$scope.selectedItem.id
-          },
-          {
-            update : {
-              method: 'PUT'
-            }
-          }
-         );
+					$(modalId).modal('hide');
 
-        Card.update($scope.selectedItem);
+					console.log('updated...', res);
 
-      };
+				})
+				.catch( function(err) {
+					alert("The item could not be updated: " + err.statusText);
+				});
 
-      $scope.deleteItem = function() {
-        
-        //delete the item
-        var Card = $resource($scope.url,  { id : $scope.selectedItem.id } );
-        Card.delete();
+			};
 
-        $scope.$emit('deleteItemEvent', $scope.selectedItem);
+			$scope.deleteItem = function() {
+				
+				//delete the item
+				var Card = $resource($scope.url,  { id : $scope.selectedItem.id } );
+				Card.delete();
 
-        //remove the selected item 
-        $scope.selectedItem = null;
+				$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
-      };
+				//remove the selected item 
+				$scope.selectedItem = null;
 
-    },
+			};
 
-    link : function(scope, elem, attrs) {
+		},
 
-      //var Items = $resource(attrs.url);
+		link : function(scope, elem, attrs) {
 
-      //Items.query( function(res) {
-       // scope.items = res;
-      //});
+			//var Items = $resource(attrs.url);
 
-    }
+			//Items.query( function(res) {
+			 // scope.items = res;
+			//});
 
-  };
+		}
+
+	};
 
 });
 
 app.directive('animateOnChange', function($animate) {
-  return function(scope, elem, attr) {
-      scope.$watch(attr.animateOnChange, function(nv,ov) {
-        if (nv!=ov) {
-          var c = nv > ov?'change-up':'change';
-          $animate.addClass(elem,c, function() {
-            $animate.removeClass(elem,c);
-          });
-        }
-      })  
-  }  
+	return function(scope, elem, attr) {
+			scope.$watch(attr.animateOnChange, function(nv,ov) {
+				if (nv!=ov) {
+					var c = nv > ov?'change-up':'change';
+					$animate.addClass(elem,c, function() {
+						$animate.removeClass(elem,c);
+					});
+				}
+			})  
+	}  
 })

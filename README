@@ -7,10 +7,6 @@ This project uses the following projects:
     - Font Awesome (fonts are SIL OFL 1.1 licensed, CSS is MIT licensed, http://fortawesome.github.io/Font-Awesome)
 - Angular (MIT licensed, http://angularjs.org)
 
-- Angular CSS injector (MIT licensed, https://github.com/Yappli/angular-css-injector)
-
-
-
 ***Getting started***
 
 ** Field definition: **

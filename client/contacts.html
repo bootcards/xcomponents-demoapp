@@ -19,6 +19,7 @@
 	<script src="xc-modules/xc-header.js"></script>
 	<script src="xc-modules/xc-list-v2.js"></script>
 	<script src="xc-modules/xc-card.js"></script>
+	<script src="xc-modules/xc-image.js"></script> 
 	<script src="xc-modules/xc-footer.js"></script> 
 
 	<script>
@@ -33,8 +34,9 @@
 				{ label : "Email" , field:"email", type:"email", required: true},
 				{ label : "Phone", field:"phone"}
 			],
-			orderBy : 'firstName',
-			orderReversed : false
+			orderBy : 'lastName',
+			orderReversed : false,
+			imageBase : 'http://demo.linqed.eu/unplugged/xcontrols.nsf/'
 		};
 	</script>
 
@@ -49,12 +51,14 @@
 		allow-add="true"
 		group-by="company"
 		url="/api/Contacts"
-		summaryField="name"
-		detailsField="company">
+		summary-field="name"
+		details-field="email"
+		image-field="thumbnailUrl">
 		
-		<xc-card url="/api/Contacts/:id"></xc-card>
+		<xc-card url="/api/Contacts/:id" 
+			default-text="Select a contact from the list"></xc-card>
 
-		<xc-card url="/api/Contacts/:id"></xc-card>
+		<xc-image source-field="thumbnailUrl" title="Profile picture"></xc-image>
 
 	</xc-list>
 

@@ -6,11 +6,11 @@ app.directive('xcHeader', function() {
 	return {
 
 		scope : {
-			title : '@title'
+			title : '@'
 		},
 
 		replace : true,
-		restrict : 'AE',
+		restrict : 'E',
 		templateUrl : 'xc-modules/xc-header.html',
 
 		/*controller : function() {
