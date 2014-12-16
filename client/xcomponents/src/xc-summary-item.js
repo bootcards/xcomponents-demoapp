@@ -15,18 +15,7 @@ app.directive('xcSummaryItem', function() {
 
 		replace : true,
 		restrict : 'E',
-		templateUrl : 'xc-modules/xc-summary-item.html',
-
-		/*controller : function() {
-
-			console.log('controller');
-
-		},
-
-		link : function() {
-
-			console.log('link');
-		}*/
+		templateUrl : 'xc-summary-item.html',
 
 	};
 

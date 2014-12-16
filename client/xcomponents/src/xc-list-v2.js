@@ -29,6 +29,7 @@ app.directive("xcList", function($rootScope, $resource) {
 
 		scope : {
 
+			type : '@',				/*list type, options: flat (default), categorised, accordion*/
 			listWidth : '=' ,
 			summaryField : '@',
 			detailsField : '@',
@@ -36,7 +37,7 @@ app.directive("xcList", function($rootScope, $resource) {
 			groupBy : '@',			/*only relevant for categorised, accordion lists*/
 			url : '@',
 			imageField : '@',
-			type : '@'				/*flat (default), categorised, accordion*/
+			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
 
 		},
 
@@ -46,9 +47,8 @@ app.directive("xcList", function($rootScope, $resource) {
 		/*templateUrl: ,*/
 
 		templateUrl: function(elem,attrs) {
-		  return 'xc-modules/xc-list-' + (attrs.type=='categorised' ? 'categorised' : 'flat')  + '.html';
+		  return 'xc-list-' + attrs.type + '.html';
 		},
-
 
 		link : function(scope, elem, attrs) {
 	
@@ -56,29 +56,51 @@ app.directive("xcList", function($rootScope, $resource) {
 			scope.colRight = 'col-sm-' + (12 - parseInt(attrs.listWidth, 10) );
 	
 			var Items = $resource(attrs.url);
-
+			
 			Items.query( function(res) {
 
-				console.log('found ' + res.length + ' items in results, showing ' + scope.itemsPerPage);
+				var numRes = res.length;
 
-				if (scope.type == 'categorised') {
+				console.log('found ' + numRes + ' items in results, showing ' + scope.itemsPerPage);
+
+				if (scope.type == 'categorised' || scope.type=='accordion') {
 
 					console.log('categorise: ' + scope.groupBy);
 
 					var groups = [];
 
-					var groupFunction = function(a,b) {
-						var _a = a[scope.groupBy];
-						var _b = b[scope.groupBy];
+					//organise results per group
+					for (var i=0; i<numRes; i++) {
+						var entry = res[i];
+						var entryGroup = entry[scope.groupBy];
+						if (!entryGroup) entryGroup="(none)";
+
+						var added = false;
+					   	for (var g in groups) {
+					     if (groups[g].name == entryGroup) {
+					        groups[g].entries.push( entry);
+					        added = true;
+					        break;
+					     }
+					   	}
+
+						if (!added) {
+							groups.push({"name": entryGroup, "collapsed" : true, "entries" : [entry] });
+						}
+					}
+				
+					//sort by (1) group name and (2) order property
+
+					var sortFunction = function(a,b) {
+						
+						var _a = a['name'];
+						var _b = b['name'];
+
 						if ( _a < _b )
-				         return -1;
-				      if ( _a > _b )
-				        return 1;
-
-				     	if (_a == null) { _a = "(none)"; }
-
-				    	 groups.push(_a);
-
+				        	return -1;
+				     	if ( _a > _b )
+				        	return 1;
+				     	
 				     	//same group, now order
 				     	var _a = a[xcontrols.orderBy].toLowerCase();
 						var _b = b[xcontrols.orderBy].toLowerCase();
@@ -91,11 +113,12 @@ app.directive("xcList", function($rootScope, $resource) {
 
 				    };
 
-					//categorise the results
-					res.sort( groupFunction );
+				    groups.sort( sortFunction );
 
-					//get unique group values
-					scope.groups = getUnique(groups).sort();
+				    scope.groups = groups;
+
+/*
+					
 
 		        	//return first page of results
 					var b = [];
@@ -106,7 +129,7 @@ app.directive("xcList", function($rootScope, $resource) {
 		        	scope.hasMore = b.length < res.length;
 
 					scope.items = res;
-					scope.itemsPage = b;
+					scope.itemsPage = b;*/
 					scope.isLoading = false;
 
 
@@ -139,20 +162,27 @@ app.directive("xcList", function($rootScope, $resource) {
 		controller: function($rootScope, $scope, $resource, xcUtils) {
 
 			$scope.isLoading = true;
-      	$scope.hasMore = false;
+      		$scope.hasMore = false;
 
 			$scope.itemsPerPage = 20;
 			$scope.selected = null;
 			$scope.itemsPage = [];
-      	$scope.numPages = 1;
+      		$scope.numPages = 1;
 			
 			$scope.modelName = xcUtils.getConfig('modelName');
-      	$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
+      		$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
 			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
 			$scope.imageBase = xcUtils.getConfig('imageBase');
 			
 			$scope.newItem = {};		//default object for new items
 			
+			$scope.toggleCategory = function(expand) {
+				console.log('e: ' +expand);
+				angular.forEach( $scope.groups, function(group) {
+					group.collapsed = (group.name != expand.name);
+					console.log(group.collapsed);
+				});
+			};
 
 			//watch the filter variable for changes
 			/*$scope.$watch('filter', function() {
@@ -162,7 +192,15 @@ app.directive("xcList", function($rootScope, $resource) {
 			$scope.select = function(item) {
 				$scope.selected = item;
 				$scope.$emit('selectItemEvent', item);
+				window.scrollTo(0, 0);
 			};
+
+			$scope.showImage = function(item) {
+				return $scope.imageField && item[$scope.imageField];
+			}
+			$scope.showPlaceholder = function(item) {
+				return $scope.imagePlaceholderIcon && !item[$scope.imageField];
+			}
 
 			$scope.delete = function(item) {
 
@@ -214,8 +252,6 @@ app.directive("xcList", function($rootScope, $resource) {
 
 					$(modalId).modal('hide');
 
-					console.log('saved...', res);
-
           			$scope.items.push(res);
 
 			        //resort
@@ -223,6 +259,14 @@ app.directive("xcList", function($rootScope, $resource) {
 			        ress.sort( sortFunction );
 
 			        $scope.items = ress;
+
+					//return first page of results
+					var b = [];
+					for (var i=0; i<$scope.itemsPerPage && i<ress.length; i++) {
+						b.push( ress[i]);
+					}
+
+					$scope.itemsPage = b;
 
 				})
 				.catch( function(err) {

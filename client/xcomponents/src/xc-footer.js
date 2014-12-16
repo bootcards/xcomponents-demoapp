@@ -1,17 +1,14 @@
 
 var app = angular.module('xcontrols');
 
-app.directive('xcHeader', function() {
+app.directive('xcFooter', function() {
 
 	return {
 
-		scope : {
-			title : '@'
-		},
-
 		replace : true,
 		restrict : 'E',
-		templateUrl : 'xc-modules/xc-header.html',
+		templateUrl : 'xc-footer.html',
+		transclude : true,
 
 		/*controller : function() {
 

@@ -16,7 +16,7 @@ app.directive('xcCard', function($rootScope, $resource) {
 
 		replace : true,
 		restrict : 'E',
-		templateUrl: 'xc-modules/xc-card.html',
+		templateUrl: 'xc-card.html',
 
 		controller : function($scope, xcUtils) {
 

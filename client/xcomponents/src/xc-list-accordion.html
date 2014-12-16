@@ -27,19 +27,32 @@
 			</div>
 
 			<div class="list-group">
-				
-				<a class="list-group-item animate-repeat" ng-repeat="item in itemsPage" ng-click="select(item)"
-					ng-class="{'active' : selected == item}">
 
-					<img 
+				<div ng-repeat="group in groups" class="animate-repeat">
+					<a ng-class="{'collapsed' : group.collapsed}" class="list-group-item bootcards-list-subheading" ng-click="toggleCategory(group)">
+						{{group.name}}
+					</a>
+				
+					<a class="list-group-item" ng-show="!group.collapsed" ng-repeat="item in group.entries | filter : filter" ng-click="select(item)"
+						ng-class="{'active' : selected == item}">
+
+						<!--placeholder icon-->
+						<i ng-show="showPlaceholder(item)" class="fa fa-2x pull-left" ng-class="'fa-' + imagePlaceholderIcon"></i>
+					
+					<!--image-->
+						<img 
+						ng-show="showImage(item)"
 						class="img-rounded pull-left" 
 						ng-src="{{ imageBase + item[imageField] }}" />
 
-					<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
+						<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
 
-					<p class="list-group-item-text">{{item[detailsField]}}</p>
+						<p class="list-group-item-text">{{item[detailsField]}}</p>
+						
+					</a>
+
 					
-				</a>
+				</div>
 
 				<div class="list-group-item" ng-show="isLoading">
 					<i class="fa fa-spinner fa-spin fa-fw" style="margin-right:0; opacity: 1;"></i>Loading...

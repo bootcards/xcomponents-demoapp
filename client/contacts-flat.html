@@ -14,28 +14,14 @@
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
 	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
-	
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+
 	<script src="xcomponents/dist/xcomponents.js"></script>
 	<script src="xcomponents/dist/templates.js"></script>
 
-	<script>
-		var xcontrols = {
-			modelName : 'Contact',
-			fields : [
-				{ label : "First name" , field:"firstName", required: true, read: false},
-				{ label : "Last name" , field:"lastName", required: true, read: false},
-				{ field : "name", edit: false, formula : ['firstName', 'lastName'] }, 
-				{ field : "city" },
-				{ field : "company" },
-				{ label : "Email" , field:"email", type:"email", required: true},
-				{ label : "Phone", field:"phone"}
-			],
-			orderBy : 'lastName',
-			orderReversed : false,
-			imageBase : 'http://demo.linqed.eu/unplugged/xcontrols.nsf/'
-		};
-	</script>
-
+	<script type="text/javascript" src="mainConfig.js"></script>
+	<script src="contacts.js"></script>
+	
 </head>
 
 <body ng-controller="xcController" class="hidden">
@@ -43,19 +29,20 @@
 	<xc-header title="Contacts"></xc-header>
 
 	<xc-list 
-		list-width="4" 
+		list-width="5" 
 		allow-add="true"
 		group-by="company"
 		url="/api/Contacts"
 		summary-field="name"
-		details-field="company"
+		details-field="email"
 		image-field="thumbnailUrl"
-		type="categorised">
+		image-placeholder-icon="user"
+		type="flat">
+
+		<xc-image source-field="thumbnailUrl" title=""></xc-image>
 		
 		<xc-card url="/api/Contacts/:id" 
 			default-text="Select a contact from the list"></xc-card>
-
-		<xc-image source-field="thumbnailUrl" title="Profile picture"></xc-image>
 
 	</xc-list>
 
@@ -75,16 +62,9 @@
 	</xc-footer>
 	
 	<!-- jQuery / bootstrap.js / bootcards.js -->
-	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower_components/bootcards/dist/js/bootcards.min.js"></script>
 	<script src="bower_components/fastclick/lib/fastclick.js"></script>
-
-	<script>
-		//TODO: move this to xc-main?
-		$(function() {
-		    FastClick.attach(document.body);
-		});
-	</script>
 
 <!-- 	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
 

@@ -14,18 +14,27 @@
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
 	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 
-	<script src="xc-modules/xc-main.js"></script>
-	<script src="xc-modules/xc-header.js"></script>
-	<script src="xc-modules/xc-footer.js"></script>
-	<script src="xc-modules/xc-summary.js"></script>
-	<script src="xc-modules/xc-summary-item.js"></script>
+	<!--morris/ raphael (for the charts)-->
+	<script src="bower_components/morris.js/morris.min.js"></script>
+	<script type="text/javascript" src="bower_components/raphael/raphael-min.js"></script>
+	<link rel="stylesheet" type="text/css" href="bower_components/morris.js/morris.css">
+
+	<!-- xcomponents javascript -->
+	<script src="xcomponents/dist/xcomponents.js"></script>
+	<script src="xcomponents/dist/templates.js"></script>
+
+	<script type="text/javascript" src="mainConfig.js"></script>
+	<script src="index.js"></script>
 
 </head>
 
 <body ng-controller="xcController" class="hidden">
 
-	<xc-header title="XControls"></xc-header>
+	<xc-header title="xSampler"></xc-header>
+
+	<!-- <xc-login></xc-login> -->
 	
 	<div class="container bootcards-container">
 
@@ -35,7 +44,7 @@
 
 				<div class="col-sm-6">
 
-					<xc-summary title="Dashboard">
+					<xc-summary title="Workspace">
 						<xc-summary-item title="Contacts" count="12" icon="fa-users" target="contacts.html"></xc-summary-item>
 						<xc-summary-item title="Contacts by company" icon="fa-tasks" target="contacts-by-company.html"></xc-summary-item>
 						<xc-summary-item title="Contacts (Domino data)" count="6" icon="fa-check" target="contacts-domino.html"></xc-summary-item>
@@ -46,6 +55,9 @@
 					
 				</div>
 				<div class="col-sm-6">
+
+					<xc-chart title="Closed sales by team member - $000s (December)"
+					chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
 					
 				</div>
 			</div>
@@ -69,15 +81,9 @@
 	</xc-footer>
 	
 	<!-- jQuery / bootstrap.js / bootcards.js -->
-	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower_components/bootcards/dist/js/bootcards.js"></script>
 	<script src="bower_components/fastclick/lib/fastclick.js"></script>
-
-	<script>
-		$(function() {
-		    FastClick.attach(document.body);
-		});
-	</script>
 
 <!-- 	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
 

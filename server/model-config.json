@@ -27,5 +27,13 @@
   "Contact": {
     "dataSource": "mongo",
     "public": true
+  },
+  "user": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "Card": {
+    "dataSource": "mongo",
+    "public": true
   }
 }

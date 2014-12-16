@@ -10,7 +10,7 @@
 		</div>
 	</div>
 
-	<!-- card -->
+	<!-- card (read) -->
 	<div ng-class="{'panel panel-default' : true , 'hidden' : !selectedItem}">
 
 		<div class="panel-heading clearfix">
@@ -23,10 +23,26 @@
 
 		<div class="list-group">
 
-			<div class="list-group-item" ng-repeat="field in fieldsRead">
-				
-				<label>{{field.label}}</label>
-				<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+			<div ng-repeat="field in fieldsRead">
+
+				<div class="list-group-item" ng-show="field.type=='text'">
+					<label>{{field.label}}</label>
+					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+				</div>
+				<div class="list-group-item" ng-show="field.type=='multiline'">
+					<label>{{field.label}}</label>
+					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+				</div>
+				<a href="mailto:{{selectedItem[field.field]}}" class="list-group-item" 
+					ng-show="field.type=='email'">
+					<label>{{field.label}}</label>
+					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+				</a>
+				<a href="tel:{{selectedItem[field.field]}}" class="list-group-item" 
+					ng-show="field.type=='phone'">
+					<label>{{field.label}}</label>
+					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+				</a>
 
 			<div>
 		</div>
@@ -61,7 +77,8 @@
 
 						<label class="col-xs-3 control-label">{{field.label}}</label>
 						<div class="col-xs-9">
-							<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required" />
+							<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required" ng-show="field.type!='multiline'" />
+							<textarea class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required" ng-show="field.type=='multiline'" />
 						</div>
 
 					</div>

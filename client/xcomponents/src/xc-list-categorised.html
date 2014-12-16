@@ -28,17 +28,22 @@
 
 			<div class="list-group">
 
-				<div ng-repeat="group in groups">
-					<div class="list-group-item animate-repeat bootcards-list-subheading" >
-						{{group}}
+				<div ng-repeat="group in groups" class="animate-repeat">
+					<div class="list-group-item bootcards-list-subheading" >
+						{{group.name}}
 					</div>
 				
-					<a class="list-group-item" ng-repeat="item in itemsPage" ng-click="select(item)"
+					<a class="list-group-item" ng-repeat="item in group.entries | filter : filter" ng-click="select(item)"
 						ng-class="{'active' : selected == item}">
 
+						<!--placeholder icon-->
+						<i ng-show="showPlaceholder(item)" class="fa fa-2x pull-left" ng-class="'fa-' + imagePlaceholderIcon"></i>
+					
+					<!--image-->
 						<img 
-							class="img-rounded pull-left" 
-							ng-src="{{ imageBase + item[imageField] }}" />
+						ng-show="showImage(item)"
+						class="img-rounded pull-left" 
+						ng-src="{{ imageBase + item[imageField] }}" />
 
 						<h4 class="list-group-item-heading">{{item[summaryField]}}</h4>
 

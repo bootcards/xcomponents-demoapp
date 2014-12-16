@@ -1,0 +1,9 @@
+{
+  "name": "user",
+  "base": "User",
+  "properties": {},
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": []
+}

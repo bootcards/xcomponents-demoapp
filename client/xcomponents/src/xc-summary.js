@@ -13,7 +13,7 @@ app.directive('xcSummary', function() {
 		replace : true,
 		restrict : 'E',
 		transclude : true,
-		templateUrl : 'xc-modules/xc-summary.html',
+		templateUrl : 'xc-summary.html',
 
 		/*controller : function() {
 

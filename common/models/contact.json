@@ -36,6 +36,9 @@
     },
     "phone": {
       "type": "string"
+    },
+    "comments": {
+      "type": "string"
     }
   },
   "validations": [],

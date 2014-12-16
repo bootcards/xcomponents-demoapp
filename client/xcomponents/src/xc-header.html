@@ -1,0 +1,47 @@
+
+<div>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+
+	<div class="container">
+
+		<div class="navbar-header">
+
+			<a class="navbar-brand">{{title}}</a>	
+
+		</div>
+
+		<!--slide-in menu button-->
+		<button type="button" class="btn btn-default btn-menu pull-left offCanvasToggle" data-toggle="offcanvas">
+	   <i class="fa fa-lg fa-bars"></i><span>Menu</span>
+	   </button>
+
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li ng-repeat="o in menuOptions" ng-class="{'active' : isActive(o)}">
+          <a href="{{o.url}}">
+            <i class="fa" ng-class="o.icon ? o.icon : null"></i>
+            {{o.label}}
+          </a>
+        </li>
+      </ul>
+    </div>
+	</div>
+
+</div>
+
+<!--slide in menu-->
+  <nav id="offCanvasMenu" class="navmenu offcanvas offcanvas-left">
+    <ul class="nav">
+      <li ng-repeat="o in menuOptions" ng-class="{'active' : isActive(o)}">
+        <a href="{{o.url}}">
+          <i class="fa fa-lg" ng-class="o.icon ? o.icon : null"></i>
+          {{o.label}}
+        </a>
+      </li>
+    </ul>
+
+    <div ng-show="{{appVersion}}" style="margin-top:20px; padding-left: 20px; font-size: 12px; color: #777">{{appVersion}}</div>
+  </nav>
+
+</div>
