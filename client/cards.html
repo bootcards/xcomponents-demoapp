@@ -5,27 +5,16 @@
 	<title>XControls</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
-	<!-- styles -->
-	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="css/styles.css">
+	<!-- polyfill for html imports -->
+	<script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
-	<!-- javascript -->
-	<script src="bower_components/angular/angular.min.js"></script>
-	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
-	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
-	<script src="bower_components/jquery/dist/jquery.min.js"></script>
-
-	<script src="xc-modules/xc-main.js"></script>
-	<script src="xc-modules/xc-header.js"></script>
-	<script src="xc-modules/xc-list-v2.js"></script>
-	<script src="xc-modules/xc-card.js"></script>
-	<script src="xc-modules/xc-image.js"></script> 
-	<script src="xc-modules/xc-footer.js"></script> 
+	<!-- all xcomponents resources -->
+	<link rel="import" href="xcomponents/includes.html"></script>
 
 	<script type="text/javascript" src="mainConfig.js"></script>
 	<script src="cards.js"></script>
-
+	<script src="index.js"></script>
+	<script src="contacts.js"></script>
 	
 </head>
 
@@ -34,19 +23,126 @@
 	<xc-header title="Cards"></xc-header>
 
 	<xc-list 
-		list-width="4" 
-		allow-add="true"
-		group-by="company"
-		url="/api/Cards"
-		summary-field="title"
+		title="Cards"
+		list-width="5" 
+		allow-add="false"
+		allow-search="false"
+		src-data="listEntries"
+		summary-field="label"
 		details-field="description"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user">
-		
-		<xc-card url="/api/Contacts/:id" 
-			default-text="Select a contact from the list"></xc-card>
+		icon-field="icon"
+		autoload-first="true"
+		type="flat">
 
-		<xc-image source-field="thumbnailUrl" title="Profile picture"></xc-image>
+ 		<div>
+ 	
+	 		<xc-base ng-if="$parent.selected.id =='base'" footer-text="Built with Bootcards - Base Card"
+	 			title="Base Card">
+	 			<div class="list-group-item">
+			    	<p class="list-group-item-text">Name</p>
+			        <h4 class="list-group-item-heading">John Smith</h4>
+			    </div>
+			    <div class="list-group-item">
+			        <p class="list-group-item-text">Occupation</p>
+			        <h4 class="list-group-item-heading">Web Developer</h4>
+			    </div>
+			    <div class="list-group-item">
+			        <p class="list-group-item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mauris tellus, vehicula ut tellus id, suscipit dapibus tortor. Integer viverra turpis ac fringilla hendrerit. Sed faucibus posuere felis et pellentesque. Cras varius tortor vitae molestie tempor. Proin ut viverra elit, ac gravida tortor.</p>
+			    </div>
+	 		</xc-base>
+
+	 		<xc-chart ng-if="$parent.selected.id =='chart'" chart-id="closed-sales" 
+	 			title="Chart Card"
+	 			chart-type="donut"
+	 			value-prefix="$"></xc-chart>
+
+	 		<xc-file ng-if="$parent.selected.id =='file'"
+	 			title="File Card"
+	 			file-name="File Name Goes Here"
+	 			file-type="pdf"
+				file-size="3.2 MB"
+				summary="Added by John Smith on 5 March 2014"
+				description="MediaFile card description lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum commodo, nulla ut porta interdum, mi mi venenatis felis, vitae pellentesque ante eros at enim."
+				url="/a/b/file.pdf"
+				allow-favorite="true"
+				allow-email="true">
+	 		</xc-file>
+
+			<xc-form ng-if="$parent.selected.id =='form'"
+				url="/api/Contacts/:id"
+				item-id="30233C541B56C65380257CDD0024D420" 
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
+
+			<xc-file ng-if="$parent.selected.id =='media'"
+	 			title="Media Card"
+	 			description="Media card description lorem ipsum dolor est compendium"
+				allow-favorite="true"
+				allow-email="true"
+				preview-url="http://www.teamstudio.com/Portals/218295/images/istock_000001242290small.jpg">
+	 		</xc-file>
+
+	 		<xc-reading ng-if="$parent.selected.id =='reading'"
+	 		title="Reading Card" 
+	 		footer-text="Built with Bootcards - Reading Card">
+
+	 			<div>
+					<h1>h1. Bootstrap heading&nbsp;<small>Secondary text</small></h1>
+					<h2>h2. Bootstrap heading&nbsp;<small>Secondary text</small></h2>
+					<h3>h3. Bootstrap heading &nbsp;<small>Secondary text</small></h3>
+					<h4>h4. Bootstrap heading &nbsp;<small>Secondary text</small></h4>
+					<h5>h5. Bootstrap heading &nbsp;<small>Secondary text</small></h5>
+					<h6>h6. Bootstrap heading &nbsp;<small>Secondary text</small></h6>
+					<div class="bs-example" style="padding-top: 20px;">
+						<p>Nullam quis risus eget urna mollis ornare vel eu leo. Cum
+									sociis natoque penatibus et
+									magnis dis parturient montes, nascetur ridiculus mus. Nullam
+									id dolor id nibh ultricies vehicula.
+						</p>
+						<p>Cum sociis natoque penatibus et
+									magnis dis parturient montes,
+									nascetur ridiculus mus. Donec
+									ullamcorper nulla non metus
+									auctor fringilla. Duis mollis,
+									est non commodo luctus, nisi
+									erat porttitor ligula, eget
+									lacinia odio sem nec elit. Donec
+									ullamcorper nulla non metus
+									auctor fringilla.</p><p>Maecenas sed diam eget risus
+									varius blandit sit amet non
+									magna. Donec id elit non mi
+									porta gravida at eget metus.
+									Duis
+									mollis, est non commodo
+									luctus, nisi erat porttitor
+									ligula, eget
+									lacinia odio sem
+									nec elit.
+						</p>
+					</div>
+				</div>
+
+	 		</xc-reading>
+
+	 		<xc-summary ng-if="$parent.selected.id =='summary'"
+	 		title="Summary Card" footer-text="Built with Bootcards - Summary Card">
+
+				<xc-summary-item title="Contacts" icon="fa-users" target=""></xc-summary-item>
+				<xc-summary-item title="Companies" icon="fa-building-o" target=""></xc-summary-item>
+				<xc-summary-item title="Notes" icon="fa-clipboard" target=""></xc-summary-item>
+				<xc-summary-item title="Charts" icon="fa-bar-chart-o" target=""></xc-summary-item>
+				<xc-summary-item title="Files" icon="fa-files-o" target=""></xc-summary-item>
+				<xc-summary-item title="Tasks" icon="fa-check-square-o" target=""></xc-summary-item>
+
+			</xc-summary>
+
+			<xc-upload ng-if="$parent.selected.id =='upload'"
+	 			title="Upload Card">
+
+	 		</xc-upload>
+
+
+	 	</div>
 
 	</xc-list>
 
@@ -55,21 +151,14 @@
 			<i class="fa fa-2x fa-dashboard"></i>
 			Dashboard
 		</a>
-		<a href="/contacts.html" class="btn btn-default">
+		<a href="/contacts-flat.html" class="btn btn-default">
 			<i class="fa fa-2x fa-users"></i>
 			Contacts
-		</a> 
-		<a href="/contacts-domino.html" class="btn btn-default">
-			<i class="fa fa-2x fa-users"></i>
-			Contacts (D)
-		</a>      
+		</a>     
 	</xc-footer>
 	
-	<!-- jQuery / bootstrap.js / bootcards.js -->
-	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="bower_components/bootcards/dist/js/bootcards.min.js"></script>
-	<script src="bower_components/fastclick/lib/fastclick.js"></script>
-
-<!-- 	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
+	<!-- bootstrap.js / bootcards.js -->
+	<script src="xcomponents/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="xcomponents/bower_components/bootcards/dist/js/bootcards.min.js"></script>
 
 </body></html>

@@ -8,18 +8,7 @@ app.directive('xcFooter', function() {
 		replace : true,
 		restrict : 'E',
 		templateUrl : 'xc-footer.html',
-		transclude : true,
-
-		/*controller : function() {
-
-			console.log('controller');
-
-		},
-
-		link : function() {
-
-			console.log('link');
-		}*/
+		transclude : true
 
 	};
 

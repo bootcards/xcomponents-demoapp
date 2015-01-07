@@ -1,70 +1,338 @@
-/*
- * Connect to the specified REST API, get all items and render them.
- */
+var app = angular.module("xcontrols");
 
-var app = angular.module('xcontrols');
+app.directive("xcList", function($rootScope, $resource) {
 
-app.directive('xcList', function($resource) {
+   var getUnique = function(arr) {
+	   var u = {}, a = [];
+	   for(var i = 0, l = arr.length; i < l; ++i){
+	      if(u.hasOwnProperty(arr[i])) {
+	         continue;
+	      }
+	      a.push(arr[i]);
+	      u[arr[i]] = 1;
+	   }
+	   return a;
+	};
 
-  return {
+	var sortBy = function(orderBy, orderReversed) {
 
-    scope : {
-      summaryField : '@summaryfield',
-      detailsField : '@detailsfield'
-    },
+		return function(a,b) {
 
-    replace : true,
-    restrict : 'AE',
-    templateUrl: 'xc-modules/xc-list.html',
+			var _a = a[orderBy].toLowerCase();
+			var _b = b[orderBy].toLowerCase();
+			var modifier = (orderReversed ? -1 : 1);
+			if ( _a < _b )
+				return -1 * modifier;
+			if ( _a > _b )
+				return 1 * modifier;
+			return 0;
+		};
 
-    controller: function($scope) {
+	};
 
-      $scope.selected = null;
-      $scope.orderBy = xcontrols.orderBy;
-      $scope.orderReversed = xcontrols.orderReversed;
-      
-      $scope.select = function(item) {
-        $scope.selected = item;
-        $scope.$emit('selectItemEvent', item);
-      };
+	//group an array by a property of the objects in that array
+	//returns an array containing the grouped entries
+	var getGroups = function(entries, groupBy, orderBy, orderReversed) {
 
-      $scope.loadMore = function() {
-        console.log('load more' + $scope.items.length);
+		var groups = [];
+		var numEntries = entries.length;
 
-        var items = $scope.items;
-        var numItems = items.length;
+		//organise results per group
+		for (var i=0; i<numEntries; i++) {
+			var entry = entries[i];
+			var entryGroup = entry[groupBy];
+			if (!entryGroup) entryGroup="(none)";
 
-        for (var i=numItems; i<(numItems + 10); i++) {
-          items.push( $scope.itemsAll[i] );
+			var added = false;
+		   	for (var g in groups) {
+		     if (groups[g].name == entryGroup) {
+		        groups[g].entries.push( entry);
+		        added = true;
+		        break;
+		     }
+		   	}
 
-        }
+			if (!added) {
+				groups.push({"name": entryGroup, "collapsed" : true, "entries" : [entry] });
+			}
+		}
 
-        $scope.items = items;
+	    //sort groups by group name
+    	groups.sort( function(a,b) {	
+			var _n1 = a['name'];
+			var _n2 = b['name'];
 
-      };
+			return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
+    	} );
 
-    },
+    	//now sort the entries in the group
+    	angular.forEach(groups, function(group) {
+    		group.entries.sort( sortBy( orderBy, orderReversed));
+    	});
 
-    link : function(scope, elem, attrs) {
+		return groups;
 
-      var Items = $resource(attrs.url);
+	};
 
-      Items.query( function(res) {
+	return {
 
-        console.log('found ' + res.length + ' items in results')
-        var b = [];
-        for (var i=0; i<30 && i<res.length; i++) {
-          b.push( res[i]);
-        }
-        scope.itemsAll = res;
-        scope.items = b;
-      });
+		scope : {
 
-    }
+			title : '@',
+			type : '@',				/*list type, options: flat (default), categorised, accordion*/
+			listWidth : '=' ,
+			summaryField : '@',
+			detailsField : '@',
+			allowSearch : '=?',
+			autoloadFirst : '=?',
+			allowAdd : '=',
+			groupBy : '@',			/*only relevant for categorised, accordion lists*/
+			orderBy : '@',
+			orderReversed : '@',
+			url : '@',
+			srcData : '@',
+			imageField : '@',		/*image*/
+			iconField : '@',		/*icon*/ 
+			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
 
-  };
+		},
+
+		restrict : 'E',
+		transclude : true,
+		replace : true,
+		
+		templateUrl: function(elem,attrs) {
+			//calculate the template to use
+			return 'xc-list-' + attrs.type + '.html';
+		},
+
+		link : function(scope, elem, attrs) {
+
+			scope.colLeft = 'col-sm-' + attrs.listWidth;
+			scope.colRight = 'col-sm-' + (12 - parseInt(attrs.listWidth, 10) );
+			
+			var orderReversed = scope.$eval(attrs.orderReversed);		//for booleans
+
+			if ( scope.srcDataEntries) {
+
+				scope.isLoading = false;
+				scope.hasMore = false;
+				scope.items = scope.srcDataEntries;
+				scope.itemsPage = scope.items;
+				
+			} else {
+
+		
+				var Items = $resource(attrs.url);
+				
+				Items.query( function(res) {
+
+					var numRes = res.length;
+
+					if (scope.type == 'categorised' || scope.type=='accordion') {
+
+						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
+						scope.isLoading = false;
+						
+						//auto load first entry in the first group
+						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
+							scope.select( scope.groups[0].entries[0] );
+						}
+
+					} else {
+
+						//sort the results
+						res.sort( sortBy( scope.orderBy, orderReversed ) );
+
+			        	//return first page of results
+						var b = [];
+						for (var i=0; i<scope.itemsPerPage && i<res.length; i++) {
+							b.push( res[i] );
+						}
+
+			        	scope.hasMore = b.length < res.length;
+
+						scope.items = res;
+						scope.itemsPage = b;
+						scope.isLoading = false;
+
+						//auto load first entry in the list
+						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
+							scope.select( res[0] );
+						}
+
+					}
+
+				});
+
+			}
+
+		},
+
+		controller: function($rootScope, $scope, $resource, xcUtils) {
+
+			$scope.hideList = false;
+
+			//set defaults
+			$scope.allowSearch = (typeof $scope.allowSearch == 'undefined' ? true : $scope.allowSearch);
+			$scope.autoloadFirst = (typeof $scope.autoloadFirst == 'undefined' ? false : $scope.autoloadFirst);
+
+			$scope.isLoading = true;
+      		$scope.hasMore = false;
+
+			$scope.itemsPerPage = 20;
+			$scope.selected = null;
+			$scope.itemsPage = [];
+      		$scope.numPages = 1;
+			
+			$scope.modelName = xcUtils.getConfig('modelName');
+      		$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
+			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
+			$scope.imageBase = xcUtils.getConfig('imageBase');
+			
+			$scope.newItem = {};		//default object for new items
+
+			//custom list entries
+			if ($scope.srcData) {
+				$scope.srcDataEntries = xcUtils.getConfig( $scope.srcData);
+			}
+
+			$scope.toggleCategory = function(expand) {
+				angular.forEach( $scope.groups, function(group) {
+					if (group.name == expand.name) {
+						group.collapsed = !expand.collapsed;
+					} else {
+						group.collapsed = true;
+					}
+				});
+			};
+
+			$scope.select = function(item) {
+		
+				$scope.selected = item;
+
+				$scope.$emit('selectItemEvent', item);
+				
+				if (bootcards.isXS() ) {
+					$rootScope.hideList = (item != null);
+				} else {
+					window.scrollTo(0, 0);
+				}
+			};
+
+			$scope.showImage = function(item) {
+				return $scope.imageField && item[$scope.imageField];
+			}
+			$scope.showPlaceholder = function(item) {
+				return $scope.imagePlaceholderIcon && !item[$scope.imageField];
+			}
+			$scope.showIcon = function(item) {
+				return $scope.iconField && item[$scope.iconField];
+			}
+
+			$scope.delete = function(item) {
+
+				//remove an item
+				if ($scope.itemsPage) {
+					for (var i=0; i<$scope.itemsPage.length; i++) {
+						if ($scope.itemsPage[i] == item) {
+							//remove from the scope list, set selected to null
+							$scope.itemsPage.splice( i, 1);
+							$scope.selected = null;
+							$scope.$emit('selectItemEvent', null);
+							break;
+						}
+					}
+				}
+				if ($scope.groups) {
+					for( i=$scope.groups.length-1; i>=0; i--) {
+						var e = $scope.groups[i].entries;
+						for (j=e.length-1; j>=0; j--) {
+							if (e[j] == item) {
+								$scope.groups[i].entries.splice(j, 1);
+								break;
+							}
+						}
+					}
+				}
+				
+			};
+
+			$rootScope.$on('deleteItemEvent', function(ev, item) {
+				$scope.delete(item);
+				
+			});
+
+		    //load more items
+		    $scope.loadMore = function() {
+
+		        $scope.isLoading = true;
+		        $scope.numPages++;
+
+		        var start = $scope.itemsPage.length;
+		        var end = Math.min(start + $scope.itemsPerPage, $scope.items.length);
+		        
+		        for ( var i=start; i<end; i++) {
+		          $scope.itemsPage.push( $scope.items[i]);
+		        }
+
+		        $scope.isLoading = false;
+
+		    };
+
+			//save a new item
+			$scope.saveNewItem = function(form, modalId) {
+		
+				if (!form.$valid) { alert('Please fill in all required fields'); return; }
+
+				xcUtils.calculateFormFields($scope.newItem);
+
+				$resource($scope.url).save($scope.newItem).$promise
+				.then( function(res) {
+
+					$(modalId).modal('hide');
+
+					var orderReversed = $scope.$eval($scope.orderReversed);		//for booleans
+			        var orderBy = $scope.orderBy;
+
+					if ($scope.type == 'categorised' || $scope.type=='accordion') {
+
+						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
+
+					} else {
+
+						$scope.items.push(res);
+
+				        //resort
+				        var ress = $scope.items;
+
+				        ress.sort( sortBy( $scope.orderBy, orderReversed ) );
+
+				        $scope.items = ress;
+
+						//return first page of results
+						var b = [];
+						for (var i=0; i<$scope.itemsPerPage && i<ress.length; i++) {
+							b.push( ress[i]);
+						}
+
+						$scope.itemsPage = b;
+
+					}				
+     
+
+				})
+				.catch( function(err) {
+					alert("The item could not be saved: " + err.statusText);
+				});
+	 
+				$scope.newItem = {};		//clear new item
+
+			};
+
+
+		}
+
+	};
 
 });
-
-
-

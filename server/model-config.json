@@ -35,5 +35,9 @@
   "Card": {
     "dataSource": "mongo",
     "public": true
+  },
+  "Activity": {
+    "dataSource": "mongo",
+    "public": true
   }
 }

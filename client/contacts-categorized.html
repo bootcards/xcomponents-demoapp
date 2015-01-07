@@ -5,19 +5,11 @@
 	<title>XControls</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
-	<!-- styles -->
-	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="css/styles.css">
+	<!-- polyfill for html imports -->
+	<script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
-	<!-- javascript -->
-	<script src="bower_components/angular/angular.min.js"></script>
-	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
-	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
-	<script src="bower_components/jquery/dist/jquery.min.js"></script>
-
-	<script src="xcomponents/dist/xcomponents.js"></script>
-	<script src="xcomponents/dist/templates.js"></script>
+	<!-- all xcomponents resources -->
+	<link rel="import" href="xcomponents/includes.html"></script>
 	
 	<script type="text/javascript" src="mainConfig.js"></script>
 	<script src="contacts.js"></script>
@@ -26,23 +18,28 @@
 
 <body ng-controller="xcController" class="hidden">
 
-	<xc-header title="Contacts (cat)"></xc-header>
+	<xc-header title="Categorized"></xc-header>
 
 	<xc-list 
+		title="People"
 		list-width="5" 
 		allow-add="true"
+		order-by="lastName"
+		order-reversed="false"
 		group-by="company"
 		url="/api/Contacts"
 		summary-field="name"
 		details-field="company"
 		image-field="thumbnailUrl"
 		image-placeholder-icon="user"
+		autoload-first="true"
 		type="categorised">
 
-		<xc-image source-field="thumbnailUrl" title=""></xc-image>
-		
-		<xc-card url="/api/Contacts/:id" 
-			default-text="Select a contact from the list"></xc-card>
+		<xc-form 
+			url="/api/Contacts/:id" 
+			default-text="Select a contact from the list"
+			thumbnail-field="thumbnailUrl"
+			thumbnail-show-with="name"></xc-form>
 
 	</xc-list>
 
@@ -51,21 +48,14 @@
 			<i class="fa fa-2x fa-dashboard"></i>
 			Dashboard
 		</a>
-		<a href="/contacts.html" class="btn btn-default">
+		<a href="/contacts-flat.html" class="btn btn-default">
 			<i class="fa fa-2x fa-users"></i>
 			Contacts
-		</a> 
-		<a href="/contacts-domino.html" class="btn btn-default">
-			<i class="fa fa-2x fa-users"></i>
-			Contacts (D)
-		</a>      
+		</a>     
 	</xc-footer>
 	
-	<!-- jQuery / bootstrap.js / bootcards.js -->
-	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="bower_components/bootcards/dist/js/bootcards.min.js"></script>
-	<script src="bower_components/fastclick/lib/fastclick.js"></script>
-
-<!-- 	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
+	<!-- bootstrap.js / bootcards.js -->
+	<script src="xcomponents/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="xcomponents/bower_components/bootcards/dist/js/bootcards.min.js"></script>
 
 </body></html>

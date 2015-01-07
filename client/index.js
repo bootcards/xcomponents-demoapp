@@ -11,4 +11,3 @@ xcontrols.charts['closed-sales'] = [
   {label: 'Jeanette Quijano', value: 1250 },
   {label: 'Simon Sweet', value: 5250 }
 ];
-

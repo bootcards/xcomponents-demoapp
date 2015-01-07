@@ -8,7 +8,9 @@
 var app = angular.module('xcontrols', [
 	'templates-main',
 	'ngResource',
-	'ngAnimate'
+	'ngAnimate',
+	'ngSanitize',
+	'ui.bootstrap'
 ]);
 
 app.controller('xcController', function($rootScope, $scope, $timeout) {
@@ -19,7 +21,7 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 	var userAgent = navigator.userAgent;
 	$scope.iOS = (/(iPhone|iPad|iPod)/gi).test(userAgent);
 	$scope.Android = (/(Android)/gi).test(userAgent);
-	var css = 'bower_components/bootcards/dist/css/';
+	var css = 'xcomponents/bower_components/bootcards/dist/css/';
 
 	if ($scope.iOS) {
 		css += 'bootcards-ios-lite.min.css';
@@ -42,7 +44,6 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 		var config = xcontrols;
 
 		if (config.fields) {
-			console.log('got fields')
 
 			config.fieldsRead = [];		//list of fields in read mode
 			config.fieldsEdit = [];		//list of fields in edit mode
@@ -50,6 +51,7 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 
 			//add labels if not specified (proper cased field name)
 			for (var i=0; i<config.fields.length; i++) {
+
 				var f = config.fields[i];
 
 				if (!f.type) {
@@ -60,11 +62,11 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 					f.label = f.field.substring(0,1).toUpperCase() + f.field.substring(1);
 				}
 				//set 'show in read mode' property
-				if ( !f.read ) {
+				if ( !f.hasOwnProperty('read') ) {
 					f.read = true;
 				}
 				//set 'show in edit mode' property
-				if ( !f.edit ) {
+				if ( !f.hasOwnProperty('edit') ) {
 					f.edit = true;
 				}
 

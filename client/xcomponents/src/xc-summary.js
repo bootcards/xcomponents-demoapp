@@ -1,5 +1,4 @@
 
-
 var app = angular.module('xcontrols');
 
 app.directive('xcSummary', function() {
@@ -7,24 +6,14 @@ app.directive('xcSummary', function() {
 	return {
 
 		scope : {
-			title : '@title',
+			title : '@',
+			footerText : '@'
 		},
 
 		replace : true,
 		restrict : 'E',
 		transclude : true,
-		templateUrl : 'xc-summary.html',
-
-		/*controller : function() {
-
-			console.log('controller');
-
-		},
-
-		link : function() {
-
-			console.log('link');
-		}*/
+		templateUrl : 'xc-summary.html'
 
 	};
 

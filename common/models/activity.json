@@ -1,0 +1,32 @@
+{
+  "name": "Activity",
+  "plural": "Activities",
+  "base": "PersistedModel",
+  "properties": {
+    "contact": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "assignedTo": {
+      "type": "string"
+    },
+    "date": {
+      "type": "date"
+    },
+    "company": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": []
+}

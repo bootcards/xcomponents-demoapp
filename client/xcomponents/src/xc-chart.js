@@ -20,6 +20,10 @@ app.directive('xcChart', function() {
 
 			var charts = xcUtils.getConfig('charts');
 
+			if (typeof $scope.chartId == "undefined") {
+				console.error("Chart: missing chart id, e.g. chart-id=\"closed-sales\";");
+			}
+
 			$scope.chartData = charts[$scope.chartId];
 
 			$scope.chartTotal = 0;

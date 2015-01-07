@@ -15,7 +15,7 @@ app.directive('xcSummaryItem', function() {
 
 		replace : true,
 		restrict : 'E',
-		templateUrl : 'xc-summary-item.html',
+		templateUrl : 'xc-summary-item.html'
 
 	};
 

@@ -1,0 +1,57 @@
+<!doctype html>
+<html ng-app="xcontrols">
+
+<head>
+    <title>XControls</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- polyfill for html imports -->
+    <script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <!-- all xcomponents resources -->
+    <link rel="import" href="xcomponents/includes.html"></script>
+    
+    <script type="text/javascript" src="mainConfig.js"></script>
+    <script src="modal.js"></script>
+    
+</head>
+
+<body ng-controller="xcController" class="hidden">
+
+    <xc-header title="Modal"></xc-header>
+
+    <div class="container bootcards-container">
+
+        <div ng-controller="ModalDemoCtrl">
+            <script type="text/ng-template" id="myModalContent.html">
+                <div class="modal-header">
+                    <h3 class="modal-title">I'm a modal!</h3>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li ng-repeat="item in items">
+                            <a ng-click="selected.item = item">{{ item }}</a>
+                        </li>
+                    </ul>
+                    Selected: <b>{{ selected.item }}</b>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" ng-click="ok()">OK</button>
+                    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+                </div>
+            </script>
+
+            <button class="btn btn-default" ng-click="open()">Open me!</button>
+            <button class="btn btn-default" ng-click="open('lg')">Large modal</button>
+            <button class="btn btn-default" ng-click="open('sm')">Small modal</button>
+            <div ng-show="selected">Selection from a modal: {{ selected }}</div>
+        </div>
+    </div>
+
+        
+    <!-- bootstrap.js / bootcards.js -->
+    <script src="xcomponents/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="xcomponents/bower_components/bootcards/dist/js/bootcards.js"></script>
+
+</body>
+</html>

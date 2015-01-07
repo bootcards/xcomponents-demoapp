@@ -1,6 +1,8 @@
 /*
  * This script will import documents from a Domino database to a
  * (local) MongoDB database using Domino's DDS.
+ *
+ * It is/ was used to retrieve data from the XControls sampler database
  */
 
 var https		= require('https');
@@ -29,13 +31,21 @@ var httpOptions = {
 
 console.log("- connecting as user " + config.dominoUser);
 
-var count = 50;		//items per request
-var start = 0;
-
 var numImported = 0;
 
-getNextResults(start, count);
+importFromView('People By Last Name');
+importFromView('Activities By Contact');
 	
+function importFromView(viewName) {
+	
+	var count = 50;		//items per request
+	var start = 0;
+	var numImported = 0;
+
+	getNextResults(viewName, start, count);
+
+}
+
 function parseRangeHeader( rangeHeader ) {
 
 	var range = {
@@ -54,23 +64,22 @@ function parseRangeHeader( rangeHeader ) {
 	return range;
 }
 
-function getNextResults( start, count ) {
+function getNextResults( viewName, start, count ) {
 
 	var httpGetDominoDocs = httpOptions;
 	httpGetDominoDocs.method = 'GET';
-	httpGetDominoDocs.path = config.dominoDbPath + '/api/data/collections/unid/' + config.dominoCollectionId + 
+	httpGetDominoDocs.path = config.dominoDbPath + '/api/data/collections/name/' + encodeURIComponent(viewName) + 
 		'?start='  + start + 
 		'&count='  + count +
 		'&entrycount=false';
 
-	//console.log('get from '  + start + ' to '  + count);
+	console.log('get from '  + start + ' to '  + count + ', view: ' + viewName);
 
 	var req = https.request( httpGetDominoDocs, function(res) {
 
 		var body = '';
+		var status = res.statusCode;
 
-		console.log("- status: "  + res.statusCode);
-		
 		//var contentRange = res.headers['content-range'];
 		
 		//if (contentRange) {
@@ -93,24 +102,29 @@ function getNextResults( start, count ) {
 			//items 0-9/503
 			
 			var items = JSON.parse(body);
-			console.log('number of documents in response: ' + items.length);
 
-			var totalItems = items.length;
+			if (status != 200) {
 
-			for( var i=0; i<totalItems && i<config.maxNumToImport; i++) {
-			 	importFunctions.processDoc(items[i], (i+1), totalItems);
-			 	numImported++;
-			 }
+				console.error( items.text + ': ' + items.message);
 
-			//importFunctions.processMetadata(json.metadata);
+			} else {		//ok
 
-			console.log(" ");
+				console.log('number of documents in response: ' + items.length);
 
-			//get next set of results if there are any
-			if (items.length == count && numImported < config.maxNumToImport) {	
-				getNextResults(start+count, count);
+				var totalItems = items.length;
+
+				for( var i=0; i<totalItems && i<config.maxNumToImport; i++) {
+				 	importFunctions.processDoc(items[i], (i+1), totalItems);
+				 	numImported++;
+				 }
+
+				//importFunctions.processMetadata(json.metadata);
+
+				//get next set of results if there are any
+				if (items.length == count && numImported < config.maxNumToImport) {	
+					getNextResults(viewName, start+count, count);
+				}
 			}
-
 
 		});
 
@@ -121,4 +135,8 @@ function getNextResults( start, count ) {
 	req.on('error', function(e) {
 		console.error(e);
 	});
+}
+
+function isArray(what) {
+    return Object.prototype.toString.call(what) === '[object Array]';
 }

@@ -4,21 +4,24 @@
 
 var app = angular.module('xcontrols');
 
-app.directive('xcCard', function($rootScope, $resource) {
+app.directive('xcForm', function($rootScope, $resource) {
 
 	return {
 
 		scope : {
 			item : '=',
+			itemId : '@',
 			url : '@',
-			defaultText : '@'
+			defaultText : '@',
+			thumbnailField : '@',
+			thumbnailShowWith : '@'
 		},
 
 		replace : true,
 		restrict : 'E',
-		templateUrl: 'xc-card.html',
+		templateUrl: 'xc-form.html',
 
-		controller : function($scope, xcUtils) {
+		controller : function($scope, $resource, xcUtils) {
 
 			$scope.selectedItem = null;
 			$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
@@ -27,7 +30,54 @@ app.directive('xcCard', function($rootScope, $resource) {
 
 			$rootScope.$on('selectItemEvent', function(ev, item) {
 				$scope.selectedItem = item;
+
+				if (item == null) {
+
+					$scope.thumbnailSrc==null;
+					
+				} else {
+
+					if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
+						$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
+					}
+
+					angular.forEach($scope.fieldsEdit, function(fld) {
+						//convert date fields (stored as strings) to JS date objects
+						if (fld.type == 'date') {
+							$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+						}
+					});
+				}
+
 			});
+
+			//load specified entry 
+			if (typeof $scope.itemId != 'undefined' ) {
+				var Card = $resource($scope.url,  { id : $scope.itemId } );
+
+				Card.get().$promise
+				.then( function(item) {
+					$scope.selectedItem = item;
+
+					if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
+						$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
+					}
+
+					angular.forEach($scope.fieldsEdit, function(fld) {
+						//convert date fields (stored as strings) to JS date objects
+						if (fld.type == 'date') {
+							$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+						}
+					});
+
+				})
+			}
+
+
+			$scope.clear = function(fld) {
+				/*clear a field*/
+				$scope.selectedItem[fld] = "";
+			}
 
 			$scope.saveItem = function(form, modalId) {
 
@@ -50,8 +100,6 @@ app.directive('xcCard', function($rootScope, $resource) {
 				.then( function(res) {
 
 					$(modalId).modal('hide');
-
-					console.log('updated...', res);
 
 				})
 				.catch( function(err) {

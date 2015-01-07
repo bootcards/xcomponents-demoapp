@@ -44,42 +44,78 @@ module.exports = {
 
 	processDoc : function(doc, thisIdx, total) {
 
-		//console.log('processing ' + doc['@unid']);
+		if ( doc['@category'] == true) {
+			console.log('skip category...');
+			return;
+		}
 
-		var contact = {
-			"lastName" : doc.LastName,
-			"firstName": doc.FirstName,
-			"name" : doc.FirstName + " " + doc.LastName,
-			"email" : doc.Email,
-			"company" : doc.Company,
+		console.log('processing ' + doc['@unid'] + '/' + doc['@form']);
 
-			"streetAddress" : doc.StreetAddress,
-			"zipCode": doc.ZipCode,
-			"city": doc.City,
-			"country" : doc.Country,
-			"phone" : doc.Phone,
-			"thumbnailUrl" : doc["$0"],
-			"id" : doc['@unid']
-		};
-		
-		var contactString = JSON.stringify(contact);
+		var data = {};
+		var dataString = '';
+		var path = '';
+
+		switch (doc['@form']) {
+
+			case 'Person':
+
+				path = config.restAPIPathContacts;
+
+				data = {
+					"lastName" : doc.LastName,
+					"firstName": doc.FirstName,
+					"name" : doc.FirstName + " " + doc.LastName,
+					"email" : doc.Email,
+					"company" : doc.Company,
+
+					"streetAddress" : doc.StreetAddress,
+					"zipCode": doc.ZipCode,
+					"city": doc.City,
+					"country" : doc.Country,
+					"phone" : doc.Phone,
+					"thumbnailUrl" : doc["$0"],
+					"title" : doc.Title,
+					"id" : doc['@unid']
+				};
+				
+				break;
+
+			case 'Activity':
+
+				path = config.restAPIPathActivities;
+
+				data = {
+					'contact' : doc.Contact,
+					'title' : doc.Title,
+					'detail' : doc.Body,
+					'assignedTo' : doc['$12'],
+					'date' : doc.Date,
+					'company' : doc.COMPANY,
+					'type' : doc.Type,
+					'id' : doc['@unid']
+
+				};
+
+				break;
+
+		}
+
+		dataString = JSON.stringify(data);
 
 		var headers = {
 		  'Content-Type': 'application/json',
-		  'Content-Length': contactString.length
+		  'Content-Length': dataString.length
 		};
 
 		var httpOptions = {
 			host : config.restAPIHost,
 			port : config.restAPIPort,
-			path : config.restAPIPath,
+			path : path,
 			method : 'PUT',
 			headers : headers,
 			rejectUnauthorized: false
 		};
 
-		
-		
 		var req = http.request( httpOptions, function(res) {
 
 			var body = '';
@@ -93,14 +129,13 @@ module.exports = {
 			res.on('end', function() {
 
 				var res = JSON.parse(body);
-
-				console.log('> added ' + res.name + ' (' + res.id +')');
+				console.log('> added ' + (res.name || res.title) + ' (' + res.id +')');
 
 			});
 
 		});
 		
-		req.write( contactString );
+		req.write( dataString );
 		req.end();
 
 		req.on('error', function(e) {
