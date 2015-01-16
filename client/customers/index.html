@@ -1,15 +1,13 @@
-
-
 <!doctype html>
 <html ng-app="xcontrols">
 
 <head>
-	<title>XControls</title>
+	<title>Customers</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<!-- polyfill for html imports + xcomponents imports -->
 	<!-- <script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-	<link rel="import" href="xcomponents/includes.html"></script>
+	<link rel="import" href="/xcomponents/includes.html"></script>
  -->
 
  <!-- javascript -->
@@ -41,11 +39,16 @@
 <link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="/bower_components2/xcomponents/css/styles.css">
 
+	<!-- xcomponents config -->
+	<script type="text/javascript" src="mainConfig.js"></script>
+	<script src="index.js"></script>
+
 </head>
 
 <body ng-controller="xcController" class="hidden">
 
-	<xc-header title="xComponents">
+	<xc-header title="Customers">
+	
 	</xc-header>
 
 	<div class="container bootcards-container">
@@ -54,29 +57,38 @@
 
 			<div class="bootcards-cards">
 
-				<div class="col-sm-12">
+				<div class="col-sm-6">
 
-					<xc-summary title="Sample apps" footer-text="Built with Bootcards - Summary Card">
+					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-						<xc-summary-item title="Sampler" icon="fa-tasks" target="sampler/index.html"></xc-summary-item>
-						<xc-summary-item title="Customers" icon="fa-users" target="customers/index.html"></xc-summary-item>
+						<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="40"></xc-summary-item>
+						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="40"></xc-summary-item>
+						<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="40"></xc-summary-item>
+						<xc-summary-item title="Charts" target="charts.html" icon="fa-bar-chart-o" count="4"></xc-summary-item>
+						<xc-summary-item title="Files" target="files.html" icon="fa-files-o" count="36"></xc-summary-item>
+						
 					</xc-summary>
 					
 				</div>
-			
+				<div class="col-sm-6">
+
+					<xc-chart title="Closed sales by team member - $000s (December)"
+					chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
+					
+				</div>
 			</div>
 
 		</div>
 	</div>
 
 	<xc-footer>
-		<a href="sampler/index.html" class="btn btn-default">
-			<i class="fa fa-2x fa-tasks"></i>
-			Sampler
+		<a href="/index.html" class="btn btn-default">
+			<i class="fa fa-2x fa-dashboard"></i>
+			Dashboard
 		</a>
-		<a href="customers/index.html" class="btn btn-default">
+		<a href="/contacts-flat.html" class="btn btn-default">
 			<i class="fa fa-2x fa-users"></i>
-			Customers
+			Contacts
 		</a>     
 	</xc-footer>
 	

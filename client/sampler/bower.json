@@ -1,0 +1,17 @@
+{
+  "name": "sampler",
+  "main": "index.js",
+  "version": "0.0.0",
+  "authors": [
+    "Mark Leusink <m.leusink@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "client/bower_components/",
+    "test",
+    "tests"
+  ]
+}

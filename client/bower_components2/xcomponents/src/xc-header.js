@@ -12,12 +12,31 @@ app.directive('xcHeader', function() {
 		replace : true,
 		restrict : 'E',
 		templateUrl : 'xc-header.html',
+		transclude : true,
 
-		controller : function($rootScope, $scope, xcUtils, $timeout) {
+		controller : function($rootScope, $scope, $document, xcUtils, $timeout) {
 
 			$scope.showBackButton = false;
 
-			$scope.menuOptions = xcUtils.getConfig('menuOptions');
+			$scope.menuAlignRight = xcUtils.getConfig('menuAlignRight') || false;
+			$scope.menuOptions = [];
+			$scope.menuOptionsSecondary = [];
+			$scope.hasSecondaryOptions = false;
+
+			//split primary/ secondary option
+			angular.forEach( xcUtils.getConfig('menuOptions'), function(option) {
+				if (option.hasOwnProperty('isSecondary') && option.isSecondary) {
+					$scope.menuOptionsSecondary.push( option);
+					$scope.hasSecondaryOptions = true;
+				} else {
+					$scope.menuOptions.push( option);
+				}
+			});
+
+			if ($scope.hasSecondaryOptions) {
+				angular.element($document[0].body).addClass('has-bootcards-navbar-double');
+			}
+
 			$scope.appVersion = xcUtils.getConfig('appVersion');
 
 			var loc = window.location.href;

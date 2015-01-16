@@ -2,18 +2,7 @@ var app = angular.module("xcontrols");
 
 app.directive("xcList", function($rootScope, $resource) {
 
-   var getUnique = function(arr) {
-	   var u = {}, a = [];
-	   for(var i = 0, l = arr.length; i < l; ++i){
-	      if(u.hasOwnProperty(arr[i])) {
-	         continue;
-	      }
-	      a.push(arr[i]);
-	      u[arr[i]] = 1;
-	   }
-	   return a;
-	};
-
+	//function to sort an array of objects on a specific property and order
 	var sortBy = function(orderBy, orderReversed) {
 
 		return function(a,b) {
@@ -121,7 +110,6 @@ app.directive("xcList", function($rootScope, $resource) {
 				scope.itemsPage = scope.items;
 				
 			} else {
-
 		
 				var Items = $resource(attrs.url);
 				
@@ -215,7 +203,9 @@ app.directive("xcList", function($rootScope, $resource) {
 				
 				if (bootcards.isXS() ) {
 					$rootScope.hideList = (item != null);
+					$rootScope.showCards = (item != null);
 				} else {
+					$rootScope.showCards = true;
 					window.scrollTo(0, 0);
 				}
 			};

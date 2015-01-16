@@ -1,3 +1,19 @@
+/*right aligned button in header*/
+.bootcards-header-right {
+	position:absolute;
+	right:110px;
+}
+.bootcards-android .bootcards-header-right {
+	right: 10px;
+}
+.bootcards-header-right > button > span {
+	display: inline !important;
+}
+.bootcards-header-right > button i {
+	margin-right: 0;
+}
+
+
 a.list-group-item {
 	cursor:pointer;
 }

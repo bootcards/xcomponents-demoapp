@@ -13,7 +13,7 @@ var app = angular.module('xcontrols', [
 	'ui.bootstrap'
 ]);
 
-app.controller('xcController', function($rootScope, $scope, $timeout) {
+app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
 	$scope.menuOptions = [];
 
@@ -21,14 +21,21 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 	var userAgent = navigator.userAgent;
 	$scope.iOS = (/(iPhone|iPad|iPod)/gi).test(userAgent);
 	$scope.Android = (/(Android)/gi).test(userAgent);
-	var css = 'xcomponents/bower_components/bootcards/dist/css/';
+
+	var baseFolder = '/bower_components';
+	var css = baseFolder + '/bootcards/dist/css/';
+
+	var body = angular.element( $document[0].body);
 
 	if ($scope.iOS) {
 		css += 'bootcards-ios-lite.min.css';
+		body.addClass('bootcards-ios');
 	} else if ($scope.Android) {
 		css += 'bootcards-android-lite.min.css';
+		body.addClass('bootcards-android');
 	} else {
 		css += 'bootcards-desktop-lite.min.css';
+		body.addClass('bootcards-desktop');
 	}
 	
 	var head = angular.element(document.getElementsByTagName('head')[0]);
@@ -234,7 +241,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-06 8:13 */
+/* xcomponents 1.0.0 2015-01-16 3:16 */
 
 var app = angular.module('xcontrols');
 
@@ -630,12 +637,31 @@ app.directive('xcHeader', function() {
 		replace : true,
 		restrict : 'E',
 		templateUrl : 'xc-header.html',
+		transclude : true,
 
-		controller : function($rootScope, $scope, xcUtils, $timeout) {
+		controller : function($rootScope, $scope, $document, xcUtils, $timeout) {
 
 			$scope.showBackButton = false;
 
-			$scope.menuOptions = xcUtils.getConfig('menuOptions');
+			$scope.menuAlignRight = xcUtils.getConfig('menuAlignRight') || false;
+			$scope.menuOptions = [];
+			$scope.menuOptionsSecondary = [];
+			$scope.hasSecondaryOptions = false;
+
+			//split primary/ secondary option
+			angular.forEach( xcUtils.getConfig('menuOptions'), function(option) {
+				if (option.hasOwnProperty('isSecondary') && option.isSecondary) {
+					$scope.menuOptionsSecondary.push( option);
+					$scope.hasSecondaryOptions = true;
+				} else {
+					$scope.menuOptions.push( option);
+				}
+			});
+
+			if ($scope.hasSecondaryOptions) {
+				angular.element($document[0].body).addClass('has-bootcards-navbar-double');
+			}
+
 			$scope.appVersion = xcUtils.getConfig('appVersion');
 
 			var loc = window.location.href;
@@ -715,18 +741,7 @@ var app = angular.module("xcontrols");
 
 app.directive("xcList", function($rootScope, $resource) {
 
-   var getUnique = function(arr) {
-	   var u = {}, a = [];
-	   for(var i = 0, l = arr.length; i < l; ++i){
-	      if(u.hasOwnProperty(arr[i])) {
-	         continue;
-	      }
-	      a.push(arr[i]);
-	      u[arr[i]] = 1;
-	   }
-	   return a;
-	};
-
+	//function to sort an array of objects on a specific property and order
 	var sortBy = function(orderBy, orderReversed) {
 
 		return function(a,b) {
@@ -834,7 +849,6 @@ app.directive("xcList", function($rootScope, $resource) {
 				scope.itemsPage = scope.items;
 				
 			} else {
-
 		
 				var Items = $resource(attrs.url);
 				
@@ -928,7 +942,9 @@ app.directive("xcList", function($rootScope, $resource) {
 				
 				if (bootcards.isXS() ) {
 					$rootScope.hideList = (item != null);
+					$rootScope.showCards = (item != null);
 				} else {
+					$rootScope.showCards = true;
 					window.scrollTo(0, 0);
 				}
 			};
@@ -1634,7 +1650,7 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
   $templateCache.put("xc-header.html",
     "<div>\n" +
     "\n" +
-    "<div class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n" +
+    "<div class=\"navbar navbar-default navbar-fixed-top\" ng-class=\"{'bootcards-navbar-double' : hasSecondaryOptions}\" role=\"navigation\">\n" +
     "\n" +
     "	<div class=\"container\">\n" +
     "\n" +
@@ -1651,6 +1667,9 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
     "\n" +
     "		</div>\n" +
     "\n" +
+    "    <!--right aligned button-->\n" +
+    "    <div class=\"btn-group bootcards-header-right\" ng-transclude></div>\n" +
+    "\n" +
     "    <!--back button for small displays-->\n" +
     "    <button class=\"btn btn-default btn-back pull-left\" ng-click=\"goBack()\" type=\"button\" ng-show=\"$root.hideList\">\n" +
     "      <i class=\"fa fa-lg fa-chevron-left\"></i><span>Back</span>\n" +
@@ -1662,8 +1681,37 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
     "	   </button>\n" +
     "\n" +
     "    <div class=\"navbar-collapse collapse\">\n" +
+    "\n" +
+    "      <!--secondary menu options-->\n" +
+    "      <ul ng-if=\"hasSecondaryOptions\" class=\"nav navbar-nav navbar-right bootcards-nav-secondary\">\n" +
+    "        <li ng-repeat=\"o in ::menuOptionsSecondary\" ng-class=\"{'active' : isActive(o), 'dropdown' : hasSubmenu(o)}\">\n" +
+    "\n" +
+    "        {{o.callback}}\n" +
+    "          <!--basic option-->\n" +
+    "          <a href=\"{{o.url}}\" ng-if=\"!hasSubmenu(o)\">\n" +
+    "            <i class=\"fa\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
+    "            {{o.label}}\n" +
+    "          </a>\n" +
+    "\n" +
+    "          <!--dropdown-->\n" +
+    "          <a href=\"#\" ng-if=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n" +
+    "            <i class=\"fa\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
+    "            {{::o.label}} <span class=\"caret\"></span>\n" +
+    "\n" +
+    "            <ul class=\"dropdown-menu\">\n" +
+    "              <li ng-repeat=\"so in ::o.menuOptions\"  ng-class=\"{'active' : isActive(so)}\">\n" +
+    "                <a href=\"{{::so.url}}\">\n" +
+    "                  <i class=\"fa fa-fw\" ng-class=\"so.icon ? so.icon : null\"></i>\n" +
+    "                  {{::so.label}}\n" +
+    "                </a>\n" +
+    "              </li>\n" +
+    "            </ul>\n" +
+    "          </a>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
+    "\n" +
     "      <!-- menu options (desktop) -->\n" +
-    "      <ul class=\"nav navbar-nav\">\n" +
+    "      <ul class=\"nav navbar-nav\" ng-class=\"{'navbar-right' : menuAlignRight, 'navbar-right bootcards-nav-primary' : hasSecondaryOptions}\">\n" +
     "\n" +
     "        <li ng-repeat=\"o in ::menuOptions\" ng-class=\"{'active' : isActive(o), 'dropdown' : hasSubmenu(o)}\">\n" +
     "\n" +
@@ -1720,6 +1768,31 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
     "            </ul>\n" +
     "          </a>\n" +
     "      </li>\n" +
+    "\n" +
+    "      <!--secondary menu options-->\n" +
+    "      <li ng-repeat=\"o in ::menuOptionsSecondary\" ng-class=\"{'active' : isActive(o)}\">\n" +
+    "\n" +
+    "        <!--basic option-->\n" +
+    "        <a href=\"{{::o.url}}\" ng-show=\"!hasSubmenu(o)\">\n" +
+    "          <i class=\"fa fa-lg\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
+    "          {{::o.label}}\n" +
+    "        </a>\n" +
+    "\n" +
+    "        <!--option with submenu-->\n" +
+    "        <a href=\"#\" ng-show=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n" +
+    "            <i class=\"fa fa-chevron-circle-right\"></i>\n" +
+    "            {{::o.label}}\n" +
+    "\n" +
+    "            <ul class=\"list-unstyled\">\n" +
+    "              <li ng-repeat=\"so in ::o.menuOptions\"  ng-class=\"{'active' : isActive(so)}\">\n" +
+    "                <a href=\"{{so.url}}\">\n" +
+    "                  <i class=\"fa fa-fw\" ng-class=\"so.icon ? so.icon : null\"></i>\n" +
+    "                  {{::so.label}}\n" +
+    "                </a>\n" +
+    "              </li>\n" +
+    "            </ul>\n" +
+    "          </a>\n" +
+    "      </li>\n" +
     "    </ul>\n" +
     "\n" +
     "    <div ng-show=\"{{appVersion}}\" style=\"margin-top:20px; padding-left: 20px; font-size: 12px; color: #777\">{{appVersion}}</div>\n" +
@@ -1751,7 +1824,7 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "\n" +
     " <div class=\"row\">\n" +
     "\n" +
-    " 	<div class=\"bootcards-list {{colLeft}}\">\n" +
+    " 	<div class=\"bootcards-list {{colLeft}}\" ng-show=\"!$root.hideList\">\n" +
     "\n" +
     "		<div class=\"panel panel-default\">\n" +
     "\n" +
@@ -1800,7 +1873,7 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "\n" +
     "	</div>\n" +
     "\n" +
-    "	<div class='bootcards-cards {{colRight}}'>\n" +
+    "	<div class='bootcards-cards {{colRight}}' ng-show=\"$root.showCards\">\n" +
     "\n" +
     "		<ng-transclude></ng-transclude>\n" +
     "\n" +
@@ -1926,7 +1999,7 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "\n" +
     "	</div>\n" +
     "\n" +
-    "	<div class='bootcards-cards {{colRight}}'>\n" +
+    "	<div class='bootcards-cards {{colRight}}' ng-show=\"$root.showCards\">\n" +
     "\n" +
     "		<ng-transclude></ng-transclude>\n" +
     "\n" +
@@ -2045,7 +2118,7 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "\n" +
     "	</div>\n" +
     "\n" +
-    "	<div class='bootcards-cards {{colRight}}'>\n" +
+    "	<div class='bootcards-cards {{colRight}}' ng-show=\"$root.showCards\">\n" +
     "\n" +
     "		<ng-transclude></ng-transclude>\n" +
     "\n" +

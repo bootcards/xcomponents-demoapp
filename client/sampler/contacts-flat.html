@@ -6,11 +6,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	
 	<!-- polyfill for html imports -->
-	<script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-
-	<!-- all xcomponents resources -->
-	<link rel="import" href="xcomponents/includes.html"></script>
+	<script type="text/javascript" src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 	
+	<link rel="import" href="/bower_components2/xcomponents/includes.html"></script>
+ 
 	<script type="text/javascript" src="mainConfig.js"></script>
 	<script src="contacts.js"></script>
 	
@@ -18,21 +17,21 @@
 
 <body ng-controller="xcController" class="hidden">
 
-	<xc-header title="Accordion"></xc-header>
+	<xc-header title="Contacts"></xc-header>
 
 	<xc-list 
-		title="People by Country"
+		title="People"
 		list-width="5" 
 		allow-add="true"
 		order-by="lastName"
 		order-reversed="false"
-		group-by="country"
 		url="/api/Contacts"
 		summary-field="name"
 		details-field="company"
 		image-field="thumbnailUrl"
 		image-placeholder-icon="user"
-		type="accordion">
+		autoload-first="true"
+		type="flat">
 
 		<xc-form 
 			url="/api/Contacts/:id" 
@@ -54,7 +53,7 @@
 	</xc-footer>
 	
 	<!-- bootstrap.js / bootcards.js -->
-	<script src="xcomponents/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="xcomponents/bower_components/bootcards/dist/js/bootcards.min.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="/bower_components/bootcards/dist/js/bootcards.min.js"></script>
 
 </body></html>

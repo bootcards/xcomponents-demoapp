@@ -2,7 +2,18 @@ var xcontrols = {
 
 	appVersion : '0.1',
 
+	menuAlignRight : false,
+
 	menuOptions : [
+
+		{ label : 'Languages', isSecondary : true, icon : 'fa-globe' ,
+			menuOptions : [
+				{ label : 'Dutch', url : 'contacts-accordion.html'},
+				{ label : 'English', url : 'contacts-accordion.html'}
+			]
+		},
+		{ label : 'Help', isSecondary : true, icon : 'fa-question-circle'},
+		
 		{ label : 'Dashboard', url : 'index.html', icon : 'fa-dashboard' },
 		{ label : 'Lists', url : 'lists.html', icon : 'fa-list',
 			menuOptions : [

@@ -13,7 +13,7 @@ var app = angular.module('xcontrols', [
 	'ui.bootstrap'
 ]);
 
-app.controller('xcController', function($rootScope, $scope, $timeout) {
+app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
 	$scope.menuOptions = [];
 
@@ -21,14 +21,21 @@ app.controller('xcController', function($rootScope, $scope, $timeout) {
 	var userAgent = navigator.userAgent;
 	$scope.iOS = (/(iPhone|iPad|iPod)/gi).test(userAgent);
 	$scope.Android = (/(Android)/gi).test(userAgent);
-	var css = 'xcomponents/bower_components/bootcards/dist/css/';
+
+	var baseFolder = '/bower_components';
+	var css = baseFolder + '/bootcards/dist/css/';
+
+	var body = angular.element( $document[0].body);
 
 	if ($scope.iOS) {
 		css += 'bootcards-ios-lite.min.css';
+		body.addClass('bootcards-ios');
 	} else if ($scope.Android) {
 		css += 'bootcards-android-lite.min.css';
+		body.addClass('bootcards-android');
 	} else {
 		css += 'bootcards-desktop-lite.min.css';
+		body.addClass('bootcards-desktop');
 	}
 	
 	var head = angular.element(document.getElementsByTagName('head')[0]);

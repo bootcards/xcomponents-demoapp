@@ -1,6 +1,6 @@
- <div class='container bootcards-container'>
+ <div class="container bootcards-container">
 
- <div class='row'>
+ <div class="row">
 
  	<div class="bootcards-list {{colLeft}}" ng-show="!$root.hideList">
 
@@ -10,12 +10,12 @@
 
 			<div class="list-group">
 
-				<div ng-repeat="group in groups | filter : filter" class="animate-repeat">
-					<div class="list-group-item bootcards-list-subheading" >
+				<div ng-repeat="group in groups" class="animate-repeat">
+					<a ng-class="{'collapsed' : group.collapsed}" class="list-group-item bootcards-list-subheading" ng-click="toggleCategory(group)">
 						{{group.name}}
-					</div>
+					</a>
 				
-					<a class="list-group-item" ng-repeat="item in group.entries | filter : filter" ng-click="select(item)"
+					<a class="list-group-item" ng-show="!group.collapsed" ng-repeat="item in group.entries | filter : filter" ng-click="select(item)"
 						ng-class="{'active' : selected == item}">
 
 						<!--(placeholder) icon-->
@@ -24,7 +24,7 @@
 					
 						<!--image-->
 						<img 
-						ng-show="showImage(item)"
+						ng-if="showImage(item)"
 						class="img-rounded pull-left" 
 						ng-src="{{ imageBase + item[imageField] }}" />
 
@@ -34,6 +34,7 @@
 						
 					</a>
 
+					
 				</div>
 
 				<div class="list-group-item" ng-show="isLoading">
@@ -50,7 +51,7 @@
 
 	</div>
 
-	<div class='bootcards-cards {{colRight}}'>
+	<div class='bootcards-cards {{colRight}}' ng-show="$root.showCards">
 
 		<ng-transclude></ng-transclude>
 
