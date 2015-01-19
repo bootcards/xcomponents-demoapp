@@ -23,10 +23,19 @@ var xcontrols = {
 			]
 		},
 		{ label : 'Cards', url : 'cards.html', icon : 'fa-book' },
-		{ label : 'Other controls', url : 'lists.html', icon : 'fa-th-large',
+		{ label : 'Other controls', icon : 'fa-th-large',
 			menuOptions : [
 				{ label : 'Carousel', url : 'carousel.html', icon : 'fa-files-o' },
 				{ label : 'Dialog', url : 'modal.html', icon : 'fa-comment' }
+			]
+		},
+		{ label : 'Examples', icon : 'fa-edit',
+			menuOptions : [
+				{ label : 'Activities By Contact', url : 'activities-by-contact.html', icon : 'fa-tasks' },
+				{ label : 'Activities By Dept', url : 'activities-by-dept.html', icon : 'fa-tasks' },
+				{ label : 'Contacts', url : 'contacts-flat.html', icon : 'fa-users' },
+				{ label : 'Depts', url : 'contacts-by-dept.html', icon : 'fa-building' },
+				{ label : 'My Activities', url : 'activities-mine.html', icon : 'fa-tasks' }
 			]
 		},
 		{ label : 'Settings', url : 'settings.html', icon : 'fa-gears' }

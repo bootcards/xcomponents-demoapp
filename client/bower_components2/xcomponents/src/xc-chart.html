@@ -9,20 +9,20 @@
 		<div>
 
 			<!--bar chart-->
-			<div id="chartClosedSales"></div>
+			<div class="js-chart-canvas" id="chartClosedSales"></div>
 
 			<div class="panel-footer">
 				<button class="btn btn-default btn-block"
-					onClick="toggleChartData(event)">
+					ng-click="toggleChartData($event)">
 					<i class="fa fa-table"></i>
 					Show Data
 				</button>				
 			</div>
 		</div>
-		
+	<!-- 	
 		<div class="panel-footer">
 			<small class="pull-left">Built with Bootcards - Chart Card</small>
-		</div>					
+		</div>		 -->			
 
 	</div>		
 
@@ -43,19 +43,14 @@
 			</tbody>
 		</table>
 		<div class="panel-footer">
-			<button class="btn btn-default btn-block" onClick="toggleChartData(event, closedSalesChart)">
+			<button class="btn btn-default btn-block" ng-click="toggleChartData($event)">
 				<i class="fa fa-bar-chart-o"></i>
 				Show Chart
 			</button>				
 		</div>
-		<div class="panel-footer">
+		<!-- <div class="panel-footer">
 			<small class="pull-left">Built with Bootcards - Table Card</small>
-			<a class="btn btn-link btn-xs pull-right"
-							href="/snippets/table"
-							data-toggle="modal"
-							data-target="#docsModal">
-							View Source</a>
-		</div>													
+		</div>	 -->												
 	</div>
 
 </div>

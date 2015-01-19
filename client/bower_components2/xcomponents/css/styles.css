@@ -44,12 +44,6 @@ a.list-group-item {
 
 }
 
-/*opacity of icons in lists */
-.list-group-item i.fa {
-	opacity: 1;
-
-}
-
 /*collapsible sub menus in offcanvas*/
 .offcanvas li >  ul {
 	display: none;

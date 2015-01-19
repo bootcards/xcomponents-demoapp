@@ -32,11 +32,15 @@
     "dataSource": "mongo",
     "public": false
   },
-  "Card": {
+  "Activity": {
     "dataSource": "mongo",
     "public": true
   },
-  "Activity": {
+  "Note": {
+    "dataSource": "mongo",
+    "public": true
+  },
+   "Company": {
     "dataSource": "mongo",
     "public": true
   }

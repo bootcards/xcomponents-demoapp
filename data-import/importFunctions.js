@@ -42,65 +42,79 @@ module.exports = {
 	},*/
 	
 
-	processDoc : function(doc, thisIdx, total) {
+	processDominoDoc : function(doc, thisIdx, total) {
 
-		if ( doc['@category'] == true) {
-			console.log('skip category...');
-			return;
+		try {
+
+			if ( doc['@category'] == true) {
+				console.log('skip category...');
+				return;
+			}
+
+			console.log('processing ' + doc['@unid'] + '/' + doc['@form']);
+
+			var data = {};
+			var path = '';
+
+			switch (doc['@form']) {
+
+				case 'Person':
+
+					path = config.restAPIPathContacts;
+
+					data = {
+						"lastName" : doc.LastName,
+						"firstName": doc.FirstName,
+						"name" : doc.FirstName + " " + doc.LastName,
+						"email" : doc.Email,
+						"company" : doc.Company,
+
+						"streetAddress" : doc.StreetAddress,
+						"zipCode": doc.ZipCode,
+						"city": doc.City,
+						"country" : doc.Country,
+						"phone" : doc.Phone,
+						"thumbnailUrl" : doc["$0"],
+						"title" : doc.Title,
+						"id" : doc['@unid']
+					};
+					
+					break;
+
+				case 'Activity':
+
+					path = config.restAPIPathActivities;
+
+					data = {
+						'contact' : doc.Contact,
+						'title' : doc.Title,
+						'detail' : doc.Body,
+						'assignedTo' : doc['$12'],
+						'date' : doc.Date,
+						'company' : doc.COMPANY,
+						'type' : doc.Type,
+						'id' : doc['@unid']
+
+					};
+
+					break;
+
+			}
+
+			this.storeItemsInMongo(data, path);
+
+		} catch (e) {
+
+			console.error('error in processDominoDoc');
+			console.log(e);
 		}
 
-		console.log('processing ' + doc['@unid'] + '/' + doc['@form']);
+	},
 
-		var data = {};
-		var dataString = '';
-		var path = '';
+	//send items to Mongo REST API
+	storeItemsInMongo : function(data, path) {
 
-		switch (doc['@form']) {
-
-			case 'Person':
-
-				path = config.restAPIPathContacts;
-
-				data = {
-					"lastName" : doc.LastName,
-					"firstName": doc.FirstName,
-					"name" : doc.FirstName + " " + doc.LastName,
-					"email" : doc.Email,
-					"company" : doc.Company,
-
-					"streetAddress" : doc.StreetAddress,
-					"zipCode": doc.ZipCode,
-					"city": doc.City,
-					"country" : doc.Country,
-					"phone" : doc.Phone,
-					"thumbnailUrl" : doc["$0"],
-					"title" : doc.Title,
-					"id" : doc['@unid']
-				};
-				
-				break;
-
-			case 'Activity':
-
-				path = config.restAPIPathActivities;
-
-				data = {
-					'contact' : doc.Contact,
-					'title' : doc.Title,
-					'detail' : doc.Body,
-					'assignedTo' : doc['$12'],
-					'date' : doc.Date,
-					'company' : doc.COMPANY,
-					'type' : doc.Type,
-					'id' : doc['@unid']
-
-				};
-
-				break;
-
-		}
-
-		dataString = JSON.stringify(data);
+		var dataString = JSON.stringify(data);
 
 		var headers = {
 		  'Content-Type': 'application/json',
@@ -119,8 +133,6 @@ module.exports = {
 		var req = http.request( httpOptions, function(res) {
 
 			var body = '';
-
-			//console.log("- status: "  + res.statusCode);
 			
 			res.on('data', function(chunk) {
 				body += chunk;
@@ -142,10 +154,23 @@ module.exports = {
 			console.error(e);
 		});
 
+	},
+
+	sortByField : function(data, field) {
+
+		return data.sort(
+
+			function(a,b) {
+				return ( (a[field] > b[field]) ? 1 : ((a[field] < b[field]) ? -1 : 0));
+			}
+
+		);
+
 	}
 
-
 };
+
+
 
 /*
  * This function will retrieve any attached files from the documents in Teamroom

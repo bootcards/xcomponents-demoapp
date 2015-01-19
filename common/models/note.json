@@ -1,0 +1,29 @@
+{
+  "name": "Note",
+  "plural": "Notes",
+  "base": "PersistedModel",
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "date"
+    },
+    "parentIds": {
+      "type": "array"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": []
+}

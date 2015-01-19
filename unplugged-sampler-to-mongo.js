@@ -2,7 +2,7 @@
  * This script will import documents from a Domino database to a
  * (local) MongoDB database using Domino's DDS.
  *
- * It is/ was used to retrieve data from the XControls sampler database
+ * It is used to retrieve data from the XControls sampler database
  */
 
 var https		= require('https');
@@ -12,8 +12,8 @@ var https		= require('https');
 //var Grid		= require('gridfs-stream');
 //Grid.mongo 		= mongoose.mongo;
 
-var config 			= require('./scripts/importConfig')
-var importFunctions	= require('./scripts/importFunctions');
+var config 			= require('./data-import/importConfig')
+var importFunctions	= require('./data-import/importFunctions');
 
 console.log(" ");
 console.log("***** started Domino-to-Mongo import *****");
@@ -74,24 +74,12 @@ function getNextResults( viewName, start, count ) {
 		'&entrycount=false';
 
 	console.log('get from '  + start + ' to '  + count + ', view: ' + viewName);
+	console.log('full path', httpGetDominoDocs.path);
 
 	var req = https.request( httpGetDominoDocs, function(res) {
 
 		var body = '';
 		var status = res.statusCode;
-
-		//var contentRange = res.headers['content-range'];
-		
-		//if (contentRange) {
-		//	var range = parseRangeHeader( contentRange);
-		//	console.log('total: ' + range.total + '/'  + range.from + '/'  + range.to);
-
-			/*var split = contentRange.split('/');
-			var totalItems = parseInt(split[1]);
-			var range = 
-			var from = split[0]*/
-
-		//}
 
 		res.on('data', function(chunk) {
 			body += chunk;
@@ -99,32 +87,39 @@ function getNextResults( viewName, start, count ) {
 
 		res.on('end', function() {
 
-			//items 0-9/503
-			
-			var items = JSON.parse(body);
+			try {
 
-			if (status != 200) {
+				var items = JSON.parse(body);
 
-				console.error( items.text + ': ' + items.message);
+				if (status != 200) {
 
-			} else {		//ok
+					console.error( items.text + ': ' + items.message);
 
-				console.log('number of documents in response: ' + items.length);
+				} else {		//ok
 
-				var totalItems = items.length;
+					console.log('number of documents in response: ' + items.length);
 
-				for( var i=0; i<totalItems && i<config.maxNumToImport; i++) {
-				 	importFunctions.processDoc(items[i], (i+1), totalItems);
-				 	numImported++;
-				 }
+					var totalItems = items.length;
 
-				//importFunctions.processMetadata(json.metadata);
+					for( var i=0; i<totalItems && i<config.maxNumToImport; i++) {
+					 	importFunctions.processDominoDoc(items[i], (i+1), totalItems);
+					 	numImported++;
+					 }
 
-				//get next set of results if there are any
-				if (items.length == count && numImported < config.maxNumToImport) {	
-					getNextResults(viewName, start+count, count);
+					//importFunctions.processMetadata(json.metadata);
+
+					//get next set of results if there are any
+					if (items.length == count && numImported < config.maxNumToImport) {	
+						getNextResults(viewName, start+count, count);
+					}
+
 				}
+			} catch (e) {
+
+				console.error('could not parse:');
+				console.log(body);
 			}
+			
 
 		});
 
@@ -135,8 +130,4 @@ function getNextResults( viewName, start, count ) {
 	req.on('error', function(e) {
 		console.error(e);
 	});
-}
-
-function isArray(what) {
-    return Object.prototype.toString.call(what) === '[object Array]';
 }

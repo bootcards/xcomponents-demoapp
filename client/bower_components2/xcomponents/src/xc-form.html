@@ -26,8 +26,20 @@
 			<div ng-repeat="field in fieldsRead">
 
 				<div class="list-group-item" ng-if="field.type=='text'">
-					<img ng-if="field.field == thumbnailShowWith" class="img-rounded pull-left"
-					ng-src="{{thumbnailSrc}}" />
+
+					<span ng-if="field.field == thumbnailShowWith">
+					
+						<!--placeholder-->
+						<i ng-if="showPlaceholder()" class="fa fa-3x pull-left" ng-class="'fa-' + imagePlaceholderIcon"></i>
+						<i ng-if="showIcon()" class="fa fa-3x pull-left" ng-class="'fa-' + item[iconField]"></i>
+
+						<!--image-->
+						<img 
+							ng-if="showImage()"
+							class="img-rounded pull-left" 
+							ng-src="{{thumbnailSrc}}" />
+					</span>
+
 					<label>{{field.label}}</label>
 					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
 				</div>
@@ -40,22 +52,21 @@
 					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
 				</div>
 				<div class="list-group-item" ng-if="field.type=='multiline'">
-					<img ng-if="field.field == thumbnailShowWith" class="img-rounded pull-left"
-					ng-src="{{thumbnailSrc}}" />
 					<label>{{field.label}}</label>
 					<h4 class="list-group-item-heading" ng-bind-html="selectedItem[field.field]"></h4>
 				</div>
 				<a href="mailto:{{selectedItem[field.field]}}" class="list-group-item" 
 					ng-if="field.type=='email'">
-					<img ng-if="field.field == thumbnailShowWith" class="img-rounded pull-left"
-					ng-src="{{thumbnailSrc}}" />
 					<label>{{field.label}}</label>
 					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
 				</a>
 				<a href="tel:{{selectedItem[field.field]}}" class="list-group-item" 
 					ng-if="field.type=='phone'">
-					<img ng-if="field.field == thumbnailShowWith" class="img-rounded pull-left"
-					ng-src="{{thumbnailSrc}}" />
+					<label>{{field.label}}</label>
+					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
+				</a>
+				<a href="{{selectedItem[field.field]}}" class="list-group-item" 
+					ng-if="field.type=='link'">
 					<label>{{field.label}}</label>
 					<h4 class="list-group-item-heading">{{selectedItem[field.field]}}</h4>
 				</a>
@@ -91,7 +102,7 @@
 
 					<div class="form-group" ng-repeat="field in fieldsEdit" ng-class="{ 'has-error': cardForm[field.field].$invalid }">
 						<label class="col-xs-3 control-label">{{field.label}}</label>
-						<div class="col-xs-9" ng-if="field.type=='text' || field.type=='email' || field.type=='phone'">
+						<div class="col-xs-9" ng-if="field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'">
 							<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
 							<a class="fa fa-times-circle fa-lg clearer" ng-click="clear(field.field)"></a>
 						</div>

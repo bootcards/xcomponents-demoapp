@@ -241,7 +241,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-16 3:16 */
+/* xcomponents 1.0.0 2015-01-19 1:50 */
 
 var app = angular.module('xcontrols');
 
@@ -280,7 +280,7 @@ app.directive('xcChart', function() {
 		restrict : 'E',
 		templateUrl : 'xc-chart.html',
 
-		controller : function($scope, xcUtils) {
+		controller : function($scope, $window, xcUtils) {
 
 			var charts = xcUtils.getConfig('charts');
 
@@ -295,138 +295,177 @@ app.directive('xcChart', function() {
 				$scope.chartTotal += $scope.chartData[i].value;
 			}
 
-			drawDonutChart($scope.chartData, $scope.valuePrefix);
+			angular.element($window).bind( 'resize', function() {
+			 	if ($scope.chart) { $scope.chart.redraw(); }
+			} );
+
+			$scope.toggleChartData = function(event) {
+				/* toggle between the chart and data */
+
+				var $ev = $(event.target);
+				var $chart = $ev.parents('.bootcards-chart');
+
+				if ($chart.length>0) {
+					$chart.fadeOut( 'fast', function()  {
+						$chart
+							.siblings('.bootcards-table')
+								.fadeIn('fast');
+					});
+				} else {
+				
+					var $data = $ev.parents('.bootcards-table');
+					$data.fadeOut( 'fast', function()  {
+						$data
+							.siblings('.bootcards-chart')
+								.fadeIn('fast', function() {
+									if (typeof chart != 'undefined' && chart != null) { chart.redraw();}
+								});
+					});
+
+				}
+
+			};
 
 		},
 
-		link : function() {
+		link : function(scope, el, attrs) {
+
+			var canvas = $(".js-chart-canvas", $(el));
+			canvas.empty();
+
+			//first property is the x key, other keys are the y keys
+			var xkey = null;
+			var ykeys = [];
+			var ylabels = [];
+
+			angular.forEach( scope.chartData[0], function(value, key) {
+				if (!xkey) { 
+					xkey = key;
+				} else {
+					ykeys.push( key);
+					ylabels.push( key.substring(0,1).toUpperCase() + key.substring(1) );
+				}
+			});
+
+			//draw the chart
+			if (attrs.chartType === 'donut') {
+
+				var drawDonutChart = function(el, chartData, valuePrefix) {
+
+					//create custom Donut function with click event on the segments
+					var myDonut = Morris.Donut;
+
+					myDonut.prototype.redraw = function() {
+
+						var C, cx, cy, i, idx, last, max_value, min, next, seg, total, value, w, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+				      this.raphael.clear();
+				      cx = this.el.width() / 2;
+				      cy = this.el.height() / 2;
+				      w = (Math.min(cx, cy) - 10) / 3;
+				      total = 0;
+				      _ref = this.values;
+				      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+				        value = _ref[_i];
+				        total += value;
+				      }
+				      min = 5 / (2 * w);
+				      C = 1.9999 * Math.PI - min * this.data.length;
+				      last = 0;
+				      idx = 0;
+				      this.segments = [];
+				      _ref1 = this.values;
+				      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+				        value = _ref1[i];
+				        next = last + min + C * (value / total);
+				        seg = new Morris.DonutSegment(cx, cy, w * 2, w, last, next, this.data[i].color || this.options.colors[idx % this.options.colors.length], this.options.backgroundColor, idx, this.raphael);
+				        seg.render();
+				        this.segments.push(seg);
+				        seg.on('hover', this.select);
+				        seg.on('click', this.select);
+				        last = next;
+				        idx += 1;
+				      }
+				      this.text1 = this.drawEmptyDonutLabel(cx, cy - 10, this.options.labelColor, 15, 800);
+				      this.text2 = this.drawEmptyDonutLabel(cx, cy + 10, this.options.labelColor, 14);
+				      max_value = Math.max.apply(Math, this.values);
+				      idx = 0;
+				      _ref2 = this.values;
+				      _results = [];
+				      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+				        value = _ref2[_k];
+				        if (value === max_value) {
+				          this.select(idx);
+				          break;
+				        }
+				        _results.push(idx += 1);
+				      }
+				      return _results;
+					};
+
+					return myDonut({
+					    element: el,
+					    data: chartData,
+					    formatter: function (y, data) { 
+					    	//prefixes the values by an $ sign, adds thousands seperators
+							nStr = y + '';
+							x = nStr.split('.');
+							x1 = x[0];
+							x2 = x.length > 1 ? '.' + x[1] : '';
+							var rgx = /(\d+)(\d{3})/;
+							while (rgx.test(x1)) {
+								x1 = x1.replace(rgx, '$1' + ',' + '$2');
+							}
+							return valuePrefix + ' ' + x1 + x2;
+					    }
+					  });
+
+				};
+
+				scope.chart = drawDonutChart(canvas[0], scope.chartData, scope.valuePrefix);
+
+			} else if (attrs.chartType === 'area') {
+
+				scope.chart = Morris.Area({
+				    element: canvas[0],
+				    data: scope.chartData,
+				    xkey: xkey,
+				    ykeys: ykeys,
+				    labels: ylabels,
+				    pointSize: 2,
+				    hideHover: 'auto'
+				});
+
+			} else if (attrs.chartType === 'line') {
+					
+				scope.chart = Morris.Line({
+				    element: canvas[0],
+				    data: scope.chartData,
+				    xkey: xkey,
+				    ykeys: ykeys,
+				    labels: ylabels
+				});
+
+			} else if (attrs.chartType === 'bar') {
+
+				scope.chart = Morris.Bar({
+				    element: canvas[0],
+				    data: scope.chartData,
+				    xkey: xkey,
+				    ykeys: ykeys,
+				    labels: ylabels,
+				    xLabelAngle: 20,
+				    hideHover: 'auto'
+				});
+			}
+
+
+
 		}
 
 	};
 
 });
 
-
-
-
-
-/*
- * Clear the target DOM element and draw the sample charts
- * Samples come from the morris.js site at http://www.oesmith.co.uk/morris.js/
- */
-var closedSalesChart = null;
-
-var drawDonutChart = function(chartData, valuePrefix) {
-
-	$("#chartClosedSales").empty();
-
-	//create custom Donut function with click event on the segments
-	var myDonut = Morris.Donut;
-
-	myDonut.prototype.redraw = function() {
-
-		var C, cx, cy, i, idx, last, max_value, min, next, seg, total, value, w, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
-      this.raphael.clear();
-      cx = this.el.width() / 2;
-      cy = this.el.height() / 2;
-      w = (Math.min(cx, cy) - 10) / 3;
-      total = 0;
-      _ref = this.values;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        value = _ref[_i];
-        total += value;
-      }
-      min = 5 / (2 * w);
-      C = 1.9999 * Math.PI - min * this.data.length;
-      last = 0;
-      idx = 0;
-      this.segments = [];
-      _ref1 = this.values;
-      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
-        value = _ref1[i];
-        next = last + min + C * (value / total);
-        seg = new Morris.DonutSegment(cx, cy, w * 2, w, last, next, this.data[i].color || this.options.colors[idx % this.options.colors.length], this.options.backgroundColor, idx, this.raphael);
-        seg.render();
-        this.segments.push(seg);
-        seg.on('hover', this.select);
-        seg.on('click', this.select);
-        last = next;
-        idx += 1;
-      }
-      this.text1 = this.drawEmptyDonutLabel(cx, cy - 10, this.options.labelColor, 15, 800);
-      this.text2 = this.drawEmptyDonutLabel(cx, cy + 10, this.options.labelColor, 14);
-      max_value = Math.max.apply(Math, this.values);
-      idx = 0;
-      _ref2 = this.values;
-      _results = [];
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        value = _ref2[_k];
-        if (value === max_value) {
-          this.select(idx);
-          break;
-        }
-        _results.push(idx += 1);
-      }
-      return _results;
-	};
-
-	closedSalesChart = myDonut({
-	    element: 'chartClosedSales',
-	    data: chartData,
-	    formatter: function (y, data) { 
-	    	//prefixes the values by an $ sign, adds thousands seperators
-			nStr = y + '';
-			x = nStr.split('.');
-			x1 = x[0];
-			x2 = x.length > 1 ? '.' + x[1] : '';
-			var rgx = /(\d+)(\d{3})/;
-			while (rgx.test(x1)) {
-				x1 = x1.replace(rgx, '$1' + ',' + '$2');
-			}
-			return valuePrefix + ' ' + x1 + x2;
-	    }
-	  });
-
-};
-
-//on resize of the page: redraw the charts
-$(window)
-	.on('resize', function() {
-		window.setTimeout( function() {
-			if (closedSalesChart !== null) { closedSalesChart.redraw(); }
-		}, 250);
-	});
-
-
-//TODO: move to scope
-/* toggle between the chart and data */
-function toggleChartData(event, chart) {
-
-	var $ev = $(event.target);
-	var $chart = $ev.parents('.bootcards-chart');
-
-	if ($chart.length>0) {
-
-		$chart.fadeOut( 'fast', function()  {
-			$chart
-				.siblings('.bootcards-table')
-					.fadeIn('fast');
-		});
-
-	} else {
-		
-		var $data = $ev.parents('.bootcards-table');
-		$data.fadeOut( 'fast', function()  {
-			$data
-				.siblings('.bootcards-chart')
-					.fadeIn('fast', function() {
-						if (typeof chart != 'undefined' && chart != null) { chart.redraw();}
-					});
-		});
-
-	}
-			
-}
 
 var app = angular.module('xcontrols');
 
@@ -487,7 +526,10 @@ app.directive('xcForm', function($rootScope, $resource) {
 			url : '@',
 			defaultText : '@',
 			thumbnailField : '@',
-			thumbnailShowWith : '@'
+			thumbnailShowWith : '@',
+			iconField : '@',				/*icon*/ 
+			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+
 		},
 
 		replace : true,
@@ -550,6 +592,16 @@ app.directive('xcForm', function($rootScope, $resource) {
 			$scope.clear = function(fld) {
 				/*clear a field*/
 				$scope.selectedItem[fld] = "";
+			};
+
+			$scope.showImage = function() {
+				return $scope.selectedItem && $scope.thumbnailField && $scope.selectedItem[$scope.thumbnailField];
+			}
+			$scope.showPlaceholder = function() {
+				return $scope.selectedItem && $scope.selectedItem && $scope.imagePlaceholderIcon && !$scope.selectedItem[$scope.thumbnailField];
+			}
+			$scope.showIcon = function() {
+				return $scope.selectedItem && $scope.iconField && $scope.selectedItem[$scope.iconField];
 			}
 
 			$scope.saveItem = function(form, modalId) {
@@ -598,11 +650,6 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 		link : function(scope, elem, attrs) {
 
-			//var Items = $resource(attrs.url);
-
-			//Items.query( function(res) {
-			 // scope.items = res;
-			//});
 
 		}
 
@@ -811,10 +858,14 @@ app.directive("xcList", function($rootScope, $resource) {
 			listWidth : '=' ,
 			summaryField : '@',
 			detailsField : '@',
+			detailsFieldSubTop : '@',
+			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
 			autoloadFirst : '=?',
 			allowAdd : '=',
 			groupBy : '@',			/*only relevant for categorised, accordion lists*/
+			filterBy : '@',			/*only relevant for flat lists*/
+			filterValue : '@',		/*only relevant for flat lists*/
 			orderBy : '@',
 			orderReversed : '@',
 			url : '@',
@@ -847,6 +898,7 @@ app.directive("xcList", function($rootScope, $resource) {
 				scope.hasMore = false;
 				scope.items = scope.srcDataEntries;
 				scope.itemsPage = scope.items;
+				scope.totalNumItems = scope.items.length;
 				
 			} else {
 		
@@ -866,7 +918,24 @@ app.directive("xcList", function($rootScope, $resource) {
 							scope.select( scope.groups[0].entries[0] );
 						}
 
-					} else {
+					} else {			//flat or detailed
+
+
+						if (scope.filterBy && scope.filterValue) {
+							//filter the resultset
+							
+							var filteredRes = [];
+
+							angular.forEach( res, function(entry, idx) {
+
+								if (entry[scope.filterBy] == scope.filterValue) {
+									filteredRes.push( entry);
+								}
+							});
+
+							res = filteredRes;
+
+						}
 
 						//sort the results
 						res.sort( sortBy( scope.orderBy, orderReversed ) );
@@ -877,11 +946,12 @@ app.directive("xcList", function($rootScope, $resource) {
 							b.push( res[i] );
 						}
 
-			        	scope.hasMore = b.length < res.length;
-
-						scope.items = res;
+			        	scope.items = res;
 						scope.itemsPage = b;
 						scope.isLoading = false;
+						scope.totalNumItems = res.length;
+
+						scope.hasMore = scope.itemsPage.length < scope.totalNumItems;
 
 						//auto load first entry in the list
 						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
@@ -1006,6 +1076,7 @@ app.directive("xcList", function($rootScope, $resource) {
 		        }
 
 		        $scope.isLoading = false;
+		        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
 
 		    };
 
@@ -1348,7 +1419,7 @@ app.directive('xcUpload', function() {
 	};
 
 });
-angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-login.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
+angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-detailed.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-login.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
 
 angular.module("xc-base.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("xc-base.html",
@@ -1382,20 +1453,20 @@ angular.module("xc-chart.html", []).run(["$templateCache", function($templateCac
     "		<div>\n" +
     "\n" +
     "			<!--bar chart-->\n" +
-    "			<div id=\"chartClosedSales\"></div>\n" +
+    "			<div class=\"js-chart-canvas\" id=\"chartClosedSales\"></div>\n" +
     "\n" +
     "			<div class=\"panel-footer\">\n" +
     "				<button class=\"btn btn-default btn-block\"\n" +
-    "					onClick=\"toggleChartData(event)\">\n" +
+    "					ng-click=\"toggleChartData($event)\">\n" +
     "					<i class=\"fa fa-table\"></i>\n" +
     "					Show Data\n" +
     "				</button>				\n" +
     "			</div>\n" +
     "		</div>\n" +
-    "		\n" +
+    "	<!-- 	\n" +
     "		<div class=\"panel-footer\">\n" +
     "			<small class=\"pull-left\">Built with Bootcards - Chart Card</small>\n" +
-    "		</div>					\n" +
+    "		</div>		 -->			\n" +
     "\n" +
     "	</div>		\n" +
     "\n" +
@@ -1416,19 +1487,14 @@ angular.module("xc-chart.html", []).run(["$templateCache", function($templateCac
     "			</tbody>\n" +
     "		</table>\n" +
     "		<div class=\"panel-footer\">\n" +
-    "			<button class=\"btn btn-default btn-block\" onClick=\"toggleChartData(event, closedSalesChart)\">\n" +
+    "			<button class=\"btn btn-default btn-block\" ng-click=\"toggleChartData($event)\">\n" +
     "				<i class=\"fa fa-bar-chart-o\"></i>\n" +
     "				Show Chart\n" +
     "			</button>				\n" +
     "		</div>\n" +
-    "		<div class=\"panel-footer\">\n" +
+    "		<!-- <div class=\"panel-footer\">\n" +
     "			<small class=\"pull-left\">Built with Bootcards - Table Card</small>\n" +
-    "			<a class=\"btn btn-link btn-xs pull-right\"\n" +
-    "							href=\"/snippets/table\"\n" +
-    "							data-toggle=\"modal\"\n" +
-    "							data-target=\"#docsModal\">\n" +
-    "							View Source</a>\n" +
-    "		</div>													\n" +
+    "		</div>	 -->												\n" +
     "	</div>\n" +
     "\n" +
     "</div>\n" +
@@ -1537,8 +1603,20 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "			<div ng-repeat=\"field in fieldsRead\">\n" +
     "\n" +
     "				<div class=\"list-group-item\" ng-if=\"field.type=='text'\">\n" +
-    "					<img ng-if=\"field.field == thumbnailShowWith\" class=\"img-rounded pull-left\"\n" +
-    "					ng-src=\"{{thumbnailSrc}}\" />\n" +
+    "\n" +
+    "					<span ng-if=\"field.field == thumbnailShowWith\">\n" +
+    "					\n" +
+    "						<!--placeholder-->\n" +
+    "						<i ng-if=\"showPlaceholder()\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "						<i ng-if=\"showIcon()\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "\n" +
+    "						<!--image-->\n" +
+    "						<img \n" +
+    "							ng-if=\"showImage()\"\n" +
+    "							class=\"img-rounded pull-left\" \n" +
+    "							ng-src=\"{{thumbnailSrc}}\" />\n" +
+    "					</span>\n" +
+    "\n" +
     "					<label>{{field.label}}</label>\n" +
     "					<h4 class=\"list-group-item-heading\">{{selectedItem[field.field]}}</h4>\n" +
     "				</div>\n" +
@@ -1551,22 +1629,21 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "					<h4 class=\"list-group-item-heading\">{{selectedItem[field.field]}}</h4>\n" +
     "				</div>\n" +
     "				<div class=\"list-group-item\" ng-if=\"field.type=='multiline'\">\n" +
-    "					<img ng-if=\"field.field == thumbnailShowWith\" class=\"img-rounded pull-left\"\n" +
-    "					ng-src=\"{{thumbnailSrc}}\" />\n" +
     "					<label>{{field.label}}</label>\n" +
     "					<h4 class=\"list-group-item-heading\" ng-bind-html=\"selectedItem[field.field]\"></h4>\n" +
     "				</div>\n" +
     "				<a href=\"mailto:{{selectedItem[field.field]}}\" class=\"list-group-item\" \n" +
     "					ng-if=\"field.type=='email'\">\n" +
-    "					<img ng-if=\"field.field == thumbnailShowWith\" class=\"img-rounded pull-left\"\n" +
-    "					ng-src=\"{{thumbnailSrc}}\" />\n" +
     "					<label>{{field.label}}</label>\n" +
     "					<h4 class=\"list-group-item-heading\">{{selectedItem[field.field]}}</h4>\n" +
     "				</a>\n" +
     "				<a href=\"tel:{{selectedItem[field.field]}}\" class=\"list-group-item\" \n" +
     "					ng-if=\"field.type=='phone'\">\n" +
-    "					<img ng-if=\"field.field == thumbnailShowWith\" class=\"img-rounded pull-left\"\n" +
-    "					ng-src=\"{{thumbnailSrc}}\" />\n" +
+    "					<label>{{field.label}}</label>\n" +
+    "					<h4 class=\"list-group-item-heading\">{{selectedItem[field.field]}}</h4>\n" +
+    "				</a>\n" +
+    "				<a href=\"{{selectedItem[field.field]}}\" class=\"list-group-item\" \n" +
+    "					ng-if=\"field.type=='link'\">\n" +
     "					<label>{{field.label}}</label>\n" +
     "					<h4 class=\"list-group-item-heading\">{{selectedItem[field.field]}}</h4>\n" +
     "				</a>\n" +
@@ -1602,7 +1679,7 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardForm[field.field].$invalid }\">\n" +
     "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'\">\n" +
     "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
     "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
     "						</div>\n" +
@@ -2023,6 +2100,140 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "				\n" +
     "					<div class=\"btn-group pull-right\">\n" +
     "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
+    "							Save\n" +
+    "						</button>\n" +
+    "					</div>\n" +
+    "					<h4 class=\"modal-title\">Add {{modelName}}</h4>		\n" +
+    "				</div>\n" +
+    "				\n" +
+    "				<div class=\"modal-body\">\n" +
+    "\n" +
+    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardNewForm[field.field].$invalid }\">\n" +
+    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
+    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
+    "						</div>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
+    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "						</div>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
+    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" />\n" +
+    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
+    "						</div>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
+    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\">\n" +
+    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
+    "							</select>\n" +
+    "						</div>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
+    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" >\n" +
+    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
+    "							</select>\n" +
+    "						</div>\n" +
+    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
+    "							<xc-toggle ng-model=\"newItem[field.field]\"></xc-toggle>\n" +
+    "						</div>\n" +
+    "					</div>\n" +
+    "\n" +
+    "				</div>\n" +
+    "\n" +
+    "			</div>\n" +
+    "		</div>\n" +
+    "	</div>	\n" +
+    "</form>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("xc-list-detailed.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("xc-list-detailed.html",
+    "<div class='container bootcards-container'>\n" +
+    "\n" +
+    " <div class='row'>\n" +
+    "\n" +
+    " 	<div class=\"bootcards-list {{colLeft}}\" ng-show=\"!$root.hideList\">\n" +
+    "\n" +
+    "		<div class=\"panel panel-default\">\n" +
+    "\n" +
+    "			<ng-include src=\"'xc-list-heading.html'\"></ng-include>\n" +
+    "\n" +
+    "			<div class=\"list-group\">\n" +
+    "				\n" +
+    "				<a class=\"list-group-item animate-repeat\" ng-repeat=\"item in itemsPage | filter : filter track by item.id\"  ng-click=\"select(item)\"\n" +
+    "					ng-class=\"{'active' : selected == item}\">\n" +
+    "\n" +
+    "					<div class=\"row\">\n" +
+    "\n" +
+    "						<div class=\"col-sm-6\">\n" +
+    "\n" +
+    "							<!--(placeholder) icon-->\n" +
+    "							<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "							<i ng-if=\"showIcon(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "							\n" +
+    "							<!--image-->\n" +
+    "							<img \n" +
+    "								ng-if=\"showImage(item)\"\n" +
+    "								class=\"img-rounded pull-left\" \n" +
+    "								ng-src=\"{{ imageBase + item[imageField] }}\" />\n" +
+    "\n" +
+    "							<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
+    "\n" +
+    "							<p class=\"list-group-item-text\">{{item[detailsField]}}</p>\n" +
+    "\n" +
+    "						</div>\n" +
+    "						<div class=\"col-sm-6\">\n" +
+    "							<p class=\"list-group-item-text\">{{item[detailsFieldSubTop]}}</p>\n" +
+    "							<p class=\"list-group-item-text\">{{item[detailsFieldSubBottom]}}</p>\n" +
+    "						</div>\n" +
+    "\n" +
+    "					</div>\n" +
+    "\n" +
+    "					\n" +
+    "				</a>\n" +
+    "\n" +
+    "				<div class=\"list-group-item\" ng-show=\"isLoading\">\n" +
+    "					<i class=\"fa fa-spinner fa-spin fa-fw\" style=\"margin-right:0; opacity: 1;\"></i>Loading...\n" +
+    "				</div>\n" +
+    "\n" +
+    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\" ng-click=\"loadMore()\">\n" +
+    "					Load more...\n" +
+    "				</div>\n" +
+    "\n" +
+    "			</div>\n" +
+    "\n" +
+    "		</div>\n" +
+    "\n" +
+    "	</div>\n" +
+    "\n" +
+    "	<div class='bootcards-cards {{colRight}}' ng-show=\"$root.showCards\">\n" +
+    "\n" +
+    "		<ng-transclude></ng-transclude>\n" +
+    "\n" +
+    "	</div>\n" +
+    "\n" +
+    " </div>\n" +
+    "\n" +
+    "<!--modal to add details-->\n" +
+    "<form class=\"form-horizontal\" name=\"cardNewForm\" role=\"form\">\n" +
+    "	<div class=\"modal fade\" id=\"addModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"addModal\" aria-hidden=\"true\">\n" +
+    "		<div class=\"modal-dialog\">\n" +
+    "			<div class=\"modal-content\">\n" +
+    "			\n" +
+    "				<div class=\"modal-header\">\n" +
+    "\n" +
+    "					<div class=\"btn-group pull-left\">\n" +
+    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
+    "							<i class=\"fa fa-times\"></i>\n" +
+    "							Cancel\n" +
+    "						</button>\n" +
+    "					</div>\n" +
+    "				\n" +
+    "					<div class=\"btn-group pull-right\">\n" +
+    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
+    "							<i class=\"fa fa-check\"></i>\n" +
     "							Save\n" +
     "						</button>\n" +
     "					</div>\n" +

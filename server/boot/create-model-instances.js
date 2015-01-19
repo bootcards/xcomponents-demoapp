@@ -1,8 +1,5 @@
 //var debug = require('debug')('boot:create-model-instances');
 
-console.log('a');
-
-
 module.exports = function(app) {
 
   var User = app.models.user;
@@ -10,6 +7,7 @@ module.exports = function(app) {
   var RoleMapping = app.models.RoleMapping;
   //var Team = app.models.Team;
 
+/*
   User.create([
     {username: 'John', email: 'john@doe.com', password: 'opensesame'},
     {username: 'Jane', email: 'jane@doe.com', password: 'opensesame'},
@@ -69,8 +67,8 @@ module.exports = function(app) {
         if (err) throw err;
         debug(principal);
       });
-    });*/
+    });
   });
-
+*/
 
 };

@@ -72,10 +72,14 @@ app.directive("xcList", function($rootScope, $resource) {
 			listWidth : '=' ,
 			summaryField : '@',
 			detailsField : '@',
+			detailsFieldSubTop : '@',
+			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
 			autoloadFirst : '=?',
 			allowAdd : '=',
 			groupBy : '@',			/*only relevant for categorised, accordion lists*/
+			filterBy : '@',			/*only relevant for flat lists*/
+			filterValue : '@',		/*only relevant for flat lists*/
 			orderBy : '@',
 			orderReversed : '@',
 			url : '@',
@@ -108,6 +112,7 @@ app.directive("xcList", function($rootScope, $resource) {
 				scope.hasMore = false;
 				scope.items = scope.srcDataEntries;
 				scope.itemsPage = scope.items;
+				scope.totalNumItems = scope.items.length;
 				
 			} else {
 		
@@ -127,7 +132,24 @@ app.directive("xcList", function($rootScope, $resource) {
 							scope.select( scope.groups[0].entries[0] );
 						}
 
-					} else {
+					} else {			//flat or detailed
+
+
+						if (scope.filterBy && scope.filterValue) {
+							//filter the resultset
+							
+							var filteredRes = [];
+
+							angular.forEach( res, function(entry, idx) {
+
+								if (entry[scope.filterBy] == scope.filterValue) {
+									filteredRes.push( entry);
+								}
+							});
+
+							res = filteredRes;
+
+						}
 
 						//sort the results
 						res.sort( sortBy( scope.orderBy, orderReversed ) );
@@ -138,11 +160,12 @@ app.directive("xcList", function($rootScope, $resource) {
 							b.push( res[i] );
 						}
 
-			        	scope.hasMore = b.length < res.length;
-
-						scope.items = res;
+			        	scope.items = res;
 						scope.itemsPage = b;
 						scope.isLoading = false;
+						scope.totalNumItems = res.length;
+
+						scope.hasMore = scope.itemsPage.length < scope.totalNumItems;
 
 						//auto load first entry in the list
 						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
@@ -267,6 +290,7 @@ app.directive("xcList", function($rootScope, $resource) {
 		        }
 
 		        $scope.isLoading = false;
+		        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
 
 		    };
 

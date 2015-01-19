@@ -14,7 +14,10 @@ app.directive('xcForm', function($rootScope, $resource) {
 			url : '@',
 			defaultText : '@',
 			thumbnailField : '@',
-			thumbnailShowWith : '@'
+			thumbnailShowWith : '@',
+			iconField : '@',				/*icon*/ 
+			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+
 		},
 
 		replace : true,
@@ -77,6 +80,16 @@ app.directive('xcForm', function($rootScope, $resource) {
 			$scope.clear = function(fld) {
 				/*clear a field*/
 				$scope.selectedItem[fld] = "";
+			};
+
+			$scope.showImage = function() {
+				return $scope.selectedItem && $scope.thumbnailField && $scope.selectedItem[$scope.thumbnailField];
+			}
+			$scope.showPlaceholder = function() {
+				return $scope.selectedItem && $scope.selectedItem && $scope.imagePlaceholderIcon && !$scope.selectedItem[$scope.thumbnailField];
+			}
+			$scope.showIcon = function() {
+				return $scope.selectedItem && $scope.iconField && $scope.selectedItem[$scope.iconField];
 			}
 
 			$scope.saveItem = function(form, modalId) {
@@ -125,11 +138,6 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 		link : function(scope, elem, attrs) {
 
-			//var Items = $resource(attrs.url);
-
-			//Items.query( function(res) {
-			 // scope.items = res;
-			//});
 
 		}
 
