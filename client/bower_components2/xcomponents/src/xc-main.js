@@ -28,6 +28,9 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	$scope.iOS = (/(iPhone|iPad|iPod)/gi).test(userAgent);
 	$scope.Android = (/(Android)/gi).test(userAgent);
 
+	$rootScope.iOS = $scope.iOS;
+	$rootScope.Android = $scope.Android;
+
 	var baseFolder = '/bower_components';
 	var css = baseFolder + '/bootcards/dist/css/';
 

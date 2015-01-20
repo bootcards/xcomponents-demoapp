@@ -28,6 +28,9 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	$scope.iOS = (/(iPhone|iPad|iPod)/gi).test(userAgent);
 	$scope.Android = (/(Android)/gi).test(userAgent);
 
+	$rootScope.iOS = $scope.iOS;
+	$rootScope.Android = $scope.Android;
+
 	var baseFolder = '/bower_components';
 	var css = baseFolder + '/bootcards/dist/css/';
 
@@ -247,7 +250,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-20 9:13 */
+/* xcomponents 1.0.0 2015-01-20 9:27 */
 
 var app = angular.module('xcontrols');
 
@@ -286,7 +289,7 @@ app.directive('xcChart', function() {
 		restrict : 'E',
 		templateUrl : 'xc-chart.html',
 
-		controller : function($scope, $window, xcUtils) {
+		controller : function($scope, $rootScope, $window, $timeout, xcUtils) {
 
 			var charts = xcUtils.getConfig('charts');
 
@@ -302,7 +305,7 @@ app.directive('xcChart', function() {
 			}
 
 			angular.element($window).bind( 'resize', function() {
-			 	if ($scope.chart) { $scope.chart.redraw(); }
+				if ($scope.chart) { $scope.chart.redraw(); }
 			} );
 
 			$scope.toggleChartData = function(event) {
@@ -331,6 +334,15 @@ app.directive('xcChart', function() {
 				}
 
 			};
+
+			//initial redraw for iOS / Android
+			if ($rootScope.iOS || $rootScope.Android) {
+				$timeout( function() {
+					if ($scope.chart) { $scope.chart.redraw(); }
+				} );
+			}
+
+
 
 		},
 
@@ -428,6 +440,8 @@ app.directive('xcChart', function() {
 				};
 
 				scope.chart = drawDonutChart(canvas[0], scope.chartData, scope.valuePrefix);
+
+
 
 			} else if (attrs.chartType === 'area') {
 

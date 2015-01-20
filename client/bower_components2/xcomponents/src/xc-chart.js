@@ -16,7 +16,7 @@ app.directive('xcChart', function() {
 		restrict : 'E',
 		templateUrl : 'xc-chart.html',
 
-		controller : function($scope, $window, xcUtils) {
+		controller : function($scope, $rootScope, $window, $timeout, xcUtils) {
 
 			var charts = xcUtils.getConfig('charts');
 
@@ -32,7 +32,7 @@ app.directive('xcChart', function() {
 			}
 
 			angular.element($window).bind( 'resize', function() {
-			 	if ($scope.chart) { $scope.chart.redraw(); }
+				if ($scope.chart) { $scope.chart.redraw(); }
 			} );
 
 			$scope.toggleChartData = function(event) {
@@ -61,6 +61,15 @@ app.directive('xcChart', function() {
 				}
 
 			};
+
+			//initial redraw for iOS / Android
+			if ($rootScope.iOS || $rootScope.Android) {
+				$timeout( function() {
+					if ($scope.chart) { $scope.chart.redraw(); }
+				} );
+			}
+
+
 
 		},
 
@@ -158,6 +167,8 @@ app.directive('xcChart', function() {
 				};
 
 				scope.chart = drawDonutChart(canvas[0], scope.chartData, scope.valuePrefix);
+
+
 
 			} else if (attrs.chartType === 'area') {
 
