@@ -65,7 +65,7 @@ app.directive('xcChart', function() {
 			//initial redraw (to make the chart fit the container)
 			$timeout( function() {
 				if ($scope.chart) { $scope.chart.redraw(); }
-			}, 100);
+			}, 150);
 			
 		},
 

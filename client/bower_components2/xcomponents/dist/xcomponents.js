@@ -14,10 +14,9 @@ var app = angular.module('xcontrols', [
 ]);
 
 //bootstrapping code
- angular.element(document).ready(function() {
- 	console.log('hit it!');
-     angular.bootstrap(document, ['xcontrols']);
-   });
+angular.element(document).ready(function() {
+ angular.bootstrap(document, ['xcontrols']);
+});
 
 app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
@@ -250,7 +249,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-20 9:30 */
+/* xcomponents 1.0.0 2015-01-20 10:02 */
 
 var app = angular.module('xcontrols');
 
@@ -338,7 +337,7 @@ app.directive('xcChart', function() {
 			//initial redraw (to make the chart fit the container)
 			$timeout( function() {
 				if ($scope.chart) { $scope.chart.redraw(); }
-			}, 100);
+			}, 150);
 			
 		},
 
