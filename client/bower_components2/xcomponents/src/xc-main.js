@@ -13,6 +13,12 @@ var app = angular.module('xcontrols', [
 	'ui.bootstrap'
 ]);
 
+//bootstrapping code
+ angular.element(document).ready(function() {
+ 	console.log('hit it!');
+     angular.bootstrap(document, ['xcontrols']);
+   });
+
 app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
 	$scope.menuOptions = [];

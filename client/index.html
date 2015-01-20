@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html ng-app="xcontrols">
 
@@ -7,39 +5,16 @@
 	<title>XControls</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
+	<!--set the hidden class here, so everything is immediately hidden-->
+	<style type="text/css">
+		.hidden {
+			display:none;
+		}
+	</style>
+
 	<!-- polyfill for html imports + xcomponents imports -->
-	<!-- <script type="text/javascript" src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-	<link rel="import" href="xcomponents/includes.html"></script>
- -->
-
- <!-- javascript -->
-<script src="/bower_components/angular/angular.min.js"></script>
-<script src="/bower_components/angular-resource/angular-resource.min.js"></script>
-<script src="/bower_components/angular-animate/angular-animate.min.js"></script>
-<script src="/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
-
-<script src="/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-<script src="/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-
-<script src="/bower_components/jquery/dist/jquery.min.js"></script>
-
-<script src="/bower_components/fastclick/lib/fastclick.js"></script>
-
-<!--morris/ raphael (for the charts)-->
-<script src="/bower_components/morris.js/morris.min.js"></script>
-<script type="text/javascript" src="/bower_components/raphael/raphael-min.js"></script>
-<link rel="stylesheet" type="text/css" href="/bower_components/morris.js/morris.css">
-
-<!--blueimp libs for the photo uploader-->
-<script type="text/javascript" src="/bower_components/blueimp-canvas-to-blob/js/canvas-to-blob.min.js"></script>
-<script type="text/javascript" src="/bower_components/blueimp-load-image/js/load-image.all.min.js"></script>
-
-<script src="/bower_components2/xcomponents/dist/xcomponents.js"></script>
-
-<!-- styles -->
-<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="/bower_components2/xcomponents/css/styles.css">
+	<script type="text/javascript" src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+	<link rel="import" href="/bower_components2/xcomponents/includes.html"></script>
 
 </head>
 
@@ -80,8 +55,4 @@
 		</a>     
 	</xc-footer>
 	
-	<!-- bootstrap.js / bootcards.js -->
-	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="/bower_components/bootcards/dist/js/bootcards.js"></script>
-
 </body></html>

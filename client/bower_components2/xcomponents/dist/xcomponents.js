@@ -13,6 +13,12 @@ var app = angular.module('xcontrols', [
 	'ui.bootstrap'
 ]);
 
+//bootstrapping code
+ angular.element(document).ready(function() {
+ 	console.log('hit it!');
+     angular.bootstrap(document, ['xcontrols']);
+   });
+
 app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
 	$scope.menuOptions = [];
@@ -241,7 +247,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-19 1:50 */
+/* xcomponents 1.0.0 2015-01-20 9:13 */
 
 var app = angular.module('xcontrols');
 
