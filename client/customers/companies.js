@@ -10,7 +10,7 @@ xcontrols.fields = [
 
 	];
 
-xcontrols.imageBase = 'http://demo.linqed.eu/unplugged/xcontrols.nsf/';
+xcontrols.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/';
 
 /*
 
