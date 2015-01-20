@@ -250,7 +250,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-20 9:27 */
+/* xcomponents 1.0.0 2015-01-20 9:30 */
 
 var app = angular.module('xcontrols');
 
@@ -335,15 +335,11 @@ app.directive('xcChart', function() {
 
 			};
 
-			//initial redraw for iOS / Android
-			if ($rootScope.iOS || $rootScope.Android) {
-				$timeout( function() {
-					if ($scope.chart) { $scope.chart.redraw(); }
-				} );
-			}
-
-
-
+			//initial redraw (to make the chart fit the container)
+			$timeout( function() {
+				if ($scope.chart) { $scope.chart.redraw(); }
+			}, 100);
+			
 		},
 
 		link : function(scope, el, attrs) {

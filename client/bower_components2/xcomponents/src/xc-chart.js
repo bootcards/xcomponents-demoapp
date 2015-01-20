@@ -62,15 +62,11 @@ app.directive('xcChart', function() {
 
 			};
 
-			//initial redraw for iOS / Android
-			if ($rootScope.iOS || $rootScope.Android) {
-				$timeout( function() {
-					if ($scope.chart) { $scope.chart.redraw(); }
-				} );
-			}
-
-
-
+			//initial redraw (to make the chart fit the container)
+			$timeout( function() {
+				if ($scope.chart) { $scope.chart.redraw(); }
+			}, 100);
+			
 		},
 
 		link : function(scope, el, attrs) {
