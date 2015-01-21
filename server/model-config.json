@@ -43,5 +43,9 @@
    "Company": {
     "dataSource": "mongo",
     "public": true
+  }, 
+  "Setting": {
+    "dataSource": "mongo",
+    "public": true
   }
 }

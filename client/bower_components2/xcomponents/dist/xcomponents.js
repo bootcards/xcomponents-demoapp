@@ -249,7 +249,7 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-20 10:02 */
+/* xcomponents 1.0.0 2015-01-21 10:53 */
 
 var app = angular.module('xcontrols');
 
@@ -525,9 +525,6 @@ app.directive('xcFooter', function() {
 	};
 
 });
-/*
- * Connect to the specified REST API, get all items and render them.
- */
 
 var app = angular.module('xcontrols');
 
@@ -543,7 +540,8 @@ app.directive('xcForm', function($rootScope, $resource) {
 			thumbnailField : '@',
 			thumbnailShowWith : '@',
 			iconField : '@',				/*icon*/ 
-			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+			allowDelete : '=?',
 
 		},
 
@@ -553,13 +551,27 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 		controller : function($scope, $resource, xcUtils) {
 
+			//set defaults
+			$scope.allowDelete = (typeof $scope.allowDelete == 'undefined' ? true : $scope.allowDelete);
+			
+			// Define Card resource 
+			var CardData = $resource( $scope.url,
+				{ id : '@id'},
+				{
+			  		'exists' : { method :'GET' , url : $scope.url + '/exists'} ,
+			  		'update' : { method : 'PUT', url : $scope.url.substring( 0, $scope.url.indexOf(':')-1 ) }
+			  	}
+			);
+
 			$scope.selectedItem = null;
 			$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
 			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
 			$scope.modelName = xcUtils.getConfig('modelName');
+			$scope.isNew = true;
 
 			$rootScope.$on('selectItemEvent', function(ev, item) {
 				$scope.selectedItem = item;
+				$scope.isNew = false;
 
 				if (item == null) {
 
@@ -583,26 +595,43 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 			//load specified entry 
 			if (typeof $scope.itemId != 'undefined' ) {
-				var Card = $resource($scope.url,  { id : $scope.itemId } );
 
-				Card.get().$promise
-				.then( function(item) {
-					$scope.selectedItem = item;
+				CardData.exists( { id : $scope.itemId }).$promise
+					.then( function(res) {
+						
+						if (res.exists) {
 
-					if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
-						$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
-					}
+							//open existing data object
 
-					angular.forEach($scope.fieldsEdit, function(fld) {
-						//convert date fields (stored as strings) to JS date objects
-						if (fld.type == 'date') {
-							$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+							$scope.isNew = false;
+
+							CardData.get( { id : $scope.itemId }).$promise
+								.then( function(item) {
+									$scope.selectedItem = item;
+
+									if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
+										$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
+									}
+
+									angular.forEach($scope.fieldsEdit, function(fld) {
+										//convert date fields (stored as strings) to JS date objects
+										if (fld.type == 'date') {
+											$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+										}
+									});
+
+								});
+						} else {
+
+							//create new object
+							$scope.selectedItem = { id : $scope.itemId } ;
+							$scope.isNew = true;
 						}
+
 					});
-
-				})
+				
+				
 			}
-
 
 			$scope.clear = function(fld) {
 				/*clear a field*/
@@ -625,21 +654,11 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 				xcUtils.calculateFormFields($scope.selectedItem);
 
-				var Card = $resource($scope.url, 
-					{
-						id : $scope.selectedItem.id
-					},
-					{
-						update : {
-							method: 'PUT'
-						}
-					}
-				 );
-
-				Card.update($scope.selectedItem).$promise
+				CardData.update($scope.selectedItem).$promise
 				.then( function(res) {
 
 					$(modalId).modal('hide');
+					$scope.isNew = false;
 
 				})
 				.catch( function(err) {
@@ -651,8 +670,7 @@ app.directive('xcForm', function($rootScope, $resource) {
 			$scope.deleteItem = function() {
 				
 				//delete the item
-				var Card = $resource($scope.url,  { id : $scope.selectedItem.id } );
-				Card.delete();
+				CardData.delete( { id : $scope.selectedItem.id } );
 
 				$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
@@ -664,7 +682,6 @@ app.directive('xcForm', function($rootScope, $resource) {
 		},
 
 		link : function(scope, elem, attrs) {
-
 
 		}
 
@@ -1696,7 +1713,7 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
     "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'\">\n" +
     "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
+    "							<a class=\"fa fa-times-circle fa-lg clearer\"></a>\n" +
     "						</div>\n" +
     "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
     "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
@@ -1722,10 +1739,10 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "				</div>\n" +
     "\n" +
-    "				<div class=\"modal-footer\">\n" +
+    "				<div class=\"modal-footer\" ng-if=\"allowDelete && !isNew\">\n" +
     "					<button type=\"button\" class=\"btn btn-danger btn-block\" ng-click=\"deleteItem()\" data-dismiss=\"modal\">\n" +
     "						<i class=\"fa fa-trash-o\"></i>\n" +
-    "						Delete Contact\n" +
+    "						Delete {{modelName}}\n" +
     "					</button>		\n" +
     "				</div>\n" +
     "\n" +

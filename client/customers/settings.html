@@ -5,13 +5,29 @@
 	<title>Customers</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
+	<style type="text/css">
+		.hidden { display:none; }
+	</style>
+
 	<!-- polyfill for html imports + xcomponents imports -->
-	<script type="text/javascript" src="bower_components/webcomponentsjs/HTMLImports.min.js"></script>
-	<link rel="import" href="/xcomponents/includes.html"></script>
+	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
+	<link rel="import" href="/bower_components2/xcomponents/includes.html"></script>
 
 	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
-	<script src="index.js"></script>
+
+	<script type="text/javascript">
+
+		xcontrols.modelName = 'Settings';
+
+		xcontrols.fields = [
+				{ field : 'username', required: true},
+				{ field : 'password'},
+				{ label : 'Confirm password', field : 'passwordConfirm'},
+				{ label : 'Notification interval', field : 'notificationInterval', type : 'select', options : ['Monthly', 'Weekly', 'Daily'] }
+			];
+
+	</script>
 
 </head>
 
@@ -25,13 +41,12 @@
 
 		<div class="row">
 
-			<div class="bootcards-cards">
+			<div class="col-sm-4 col-sm-offset-4 bootcards-cards">
 
-				<div class="col-sm-12">
-
-					
-					
-				</div>
+				<xc-form
+					url="/api/Settings/:id"
+					item-id="234">
+				</xc-form>
 				
 			</div>
 

@@ -104,7 +104,7 @@
 						<label class="col-xs-3 control-label">{{field.label}}</label>
 						<div class="col-xs-9" ng-if="field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'">
 							<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
-							<a class="fa fa-times-circle fa-lg clearer" ng-click="clear(field.field)"></a>
+							<a class="fa fa-times-circle fa-lg clearer"></a>
 						</div>
 						<div class="col-xs-9" ng-if="field.type=='date'">
 							<input class="form-control" type="date" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
@@ -130,10 +130,10 @@
 
 				</div>
 
-				<div class="modal-footer">
+				<div class="modal-footer" ng-if="allowDelete && !isNew">
 					<button type="button" class="btn btn-danger btn-block" ng-click="deleteItem()" data-dismiss="modal">
 						<i class="fa fa-trash-o"></i>
-						Delete Contact
+						Delete {{modelName}}
 					</button>		
 				</div>
 
