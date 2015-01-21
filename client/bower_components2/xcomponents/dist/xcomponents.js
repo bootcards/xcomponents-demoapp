@@ -7,6 +7,7 @@
 
 var app = angular.module('xcontrols', [
 	'templates-main',
+	'xc.factories',
 	'ngResource',
 	'ngAnimate',
 	'ngSanitize',
@@ -109,7 +110,6 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	}
 
 	$timeout( function() {
-		//console.log($('[data-toggle=offcanvas]').length );
 		bootcards.init( {
 	        offCanvasHideOnMainClick : true,
 	        offCanvasBackdrop : false,
@@ -118,8 +118,6 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	        disableBreakoutSelector : 'a.no-break-out'
 	      });
 	}, 500);
-
-
 
 });
 
@@ -249,7 +247,53 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-21 10:53 */
+/* xcomponents 1.0.0 2015-01-21 10:41 */
+console.log('factories');
+
+var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
+
+app.factory('RESTFactory', function($http) {
+
+	return {
+
+		all : function(url) { 
+			//url = url.replace(":id", )
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+
+		}
+
+	};
+
+
+});
+
+app.factory('PouchFactory', function(pouchDB) {
+
+	return {
+
+		all : function(url) { 
+
+			var db = pouchDB(url);
+
+			return db.allDocs({ include_docs : true}).then( function(res) {
+
+				var queryResults = [];
+	                
+	            angular.forEach(res.rows, function(r) {
+	            	queryResults.push(r.doc);
+	            }) 
+	            
+				return queryResults;
+			});
+
+		}
+
+	};
+
+
+});
 
 var app = angular.module('xcontrols');
 
@@ -818,7 +862,7 @@ app.directive('xcImage', function() {
 });
 var app = angular.module("xcontrols");
 
-app.directive("xcList", function($rootScope, $resource) {
+app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactory) {
 
 	//function to sort an array of objects on a specific property and order
 	var sortBy = function(orderBy, orderReversed) {
@@ -904,7 +948,8 @@ app.directive("xcList", function($rootScope, $resource) {
 			srcData : '@',
 			imageField : '@',		/*image*/
 			iconField : '@',		/*icon*/ 
-			imagePlaceholderIcon : '@'		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
+			datastoreType : '@'
 
 		},
 
@@ -933,11 +978,20 @@ app.directive("xcList", function($rootScope, $resource) {
 				scope.totalNumItems = scope.items.length;
 				
 			} else {
-		
-				var Items = $resource(attrs.url);
-				
-				Items.query( function(res) {
 
+				var f = null;
+
+				if (attrs.datastoreType == 'pouch') {
+
+					f = PouchFactory;
+
+				} else {
+
+					f = RESTFactory;
+				}
+		
+				f.all(attrs.url).then( function(res) {
+		
 					var numRes = res.length;
 
 					if (scope.type == 'categorised' || scope.type=='accordion') {

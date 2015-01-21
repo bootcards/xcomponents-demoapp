@@ -7,6 +7,7 @@
 
 var app = angular.module('xcontrols', [
 	'templates-main',
+	'xc.factories',
 	'ngResource',
 	'ngAnimate',
 	'ngSanitize',
@@ -109,7 +110,6 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	}
 
 	$timeout( function() {
-		//console.log($('[data-toggle=offcanvas]').length );
 		bootcards.init( {
 	        offCanvasHideOnMainClick : true,
 	        offCanvasBackdrop : false,
@@ -118,8 +118,6 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 	        disableBreakoutSelector : 'a.no-break-out'
 	      });
 	}, 500);
-
-
 
 });
 
