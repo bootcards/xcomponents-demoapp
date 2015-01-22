@@ -12,11 +12,6 @@
 	<!-- polyfill for html imports + xcomponents imports -->
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
 	<link rel="import" href="/bower_components2/xcomponents/includes.html"></script>
- 
-	<!--pouch-->
-	<script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js"></script>
-	<!--angular-pouch-->
-	<script type="text/javascript" src="/bower_components/angular-pouchdb/dist/angular-pouchdb.js"></script>
 
 	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
@@ -39,19 +34,16 @@
 
 					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-						<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="40"></xc-summary-item>
 						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
-						<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="40"></xc-summary-item>
-				
 						
 					</xc-summary>
 					
 				</div>
 				<div class="col-sm-6">
 
-					<button ng-click="loadPouchData()" class="btn btn-primary">Load data</button>
+					<button ng-click="loadPouchData()" class="btn btn-primary">Load local data</button>
 
-					<button ng-click="clearPouchData()" class="btn btn-primary">Clear data</button>
+					<button ng-click="clearPouchData()" class="btn btn-primary">Clear local data</button>
 		
 				</div>
 			</div>

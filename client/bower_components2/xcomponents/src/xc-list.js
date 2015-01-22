@@ -1,6 +1,8 @@
 var app = angular.module("xcontrols");
 
-app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactory) {
+app.directive('xcList', 
+	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	//function to sort an array of objects on a specific property and order
 	var sortBy = function(orderBy, orderReversed) {
@@ -102,6 +104,8 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 		link : function(scope, elem, attrs) {
 
+			configService.setEndpoint( attrs.url);
+
 			scope.colLeft = 'col-sm-' + attrs.listWidth;
 			scope.colRight = 'col-sm-' + (12 - parseInt(attrs.listWidth, 10) );
 			
@@ -118,17 +122,13 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 			} else {
 
 				var f = null;
-
-				if (attrs.datastoreType == 'pouch') {
-
-					f = PouchFactory;
-
+				if (attrs.datastoreType=='pouch') {
+					f=PouchFactory;
 				} else {
-
-					f = RESTFactory;
+					f=RESTFactory;
 				}
-		
-				f.all(attrs.url).then( function(res) {
+			
+				f.all().then( function(res) {
 		
 					var numRes = res.length;
 
@@ -190,7 +190,7 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 		},
 
-		controller: function($rootScope, $scope, $resource, xcUtils) {
+		controller: function($rootScope, $scope, xcUtils) {
 
 			$scope.hideList = false;
 
@@ -311,7 +311,14 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 				xcUtils.calculateFormFields($scope.newItem);
 
-				$resource($scope.url).save($scope.newItem).$promise
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
+				f.saveNew( $scope.newItem )
 				.then( function(res) {
 
 					$(modalId).modal('hide');
@@ -359,4 +366,4 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 	};
 
-});
+}]);

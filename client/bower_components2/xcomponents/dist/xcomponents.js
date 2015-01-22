@@ -109,6 +109,7 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 
 	}
 
+	//initialize bootcards
 	$timeout( function() {
 		bootcards.init( {
 	        offCanvasHideOnMainClick : true,
@@ -121,65 +122,305 @@ app.controller('xcController', function($rootScope, $scope, $timeout, $document,
 
 });
 
-app.factory('xcUtils', function($rootScope) {
-
-	return {
-
-		getConfig : function(param) {
-			if ($rootScope.config) {
-				return $rootScope.config[param];
-			}
-		},
-
-		calculateFormFields : function(form) {
-
-			//add computed fields: get the list of fields that need to be computed
-			var f = $rootScope.config['fieldsFormula'];
-
-			for (var i=0; i<f.length; i++) {
-				
-				var fieldName = f[i].field;
-				var fields = f[i].formula;
-				var _res = [];
-
-				for (var j=0; j<fields.length; j++) {
-					_res.push( form[ fields[j] ] );
-				}
-
-				form[fieldName] = _res.join(' ');
-
-			}
-		}
-		/*
-
-		query : function(list, filter) {
-
-			var results = [];
-			var len = list.length;
-
-			for (var i=0; i<len; i++) {
-				var it = list[i];
-
-				if (it.firstName.indexOf(filter)>-1 ||) {
-					results.push(it);
-				}
-
-			}
+app.run( function() {
+	FastClick.attach(document.body);
+});
 
 
-			return results;
+/* xcomponents 1.0.0 2015-01-22 12:28 */
 
-		}*/
+var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
 
+app.service('configService', function() {
+
+    var endpoint = '/null';
+
+    return {
+
+	    setEndpoint : function(url) {
+	    	this.endpoint = url;
+	    },
+
+	    endpoint : endpoint
+	   
 	};
 
 });
 
-app.run( function() {
-	FastClick.attach(document.body);
+app.factory('RESTFactory', function($http, configService) {
+
+	return {
+
+		all : function() { 
+
+			var url = configService.endpoint.replace(":id", "");
+
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		saveNew : function(item) {
+			
+			var url = configService.endpoint.replace(":id", "");
+
+			return $http.post(url, item).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		update : function(item) {
+		
+			var url = configService.endpoint.replace(":id", "");
+
+			return $http.put(url, item).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		delete : function(item) {
+			var url = configService.endpoint.replace(":id", item.id);
+			return $http.delete(url);
+		},
+
+		getById : function(id) {
+
+			var url = configService.endpoint.replace(":id", id);
+
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		exists : function(id) {
+
+			var url = configService.endpoint.replace(":id", id) + '/exists';
+
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+		}
+
+	};
+
+} );
+
+app.factory('PouchFactory', function(pouchDB, configService) {
+
+	return {
+
+		all : function() { 
+			
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.allDocs({ include_docs : true})
+			.then( function(res) {
+
+				var queryResults = [];
+	                
+	            angular.forEach(res.rows, function(r) {
+	            	queryResults.push(r.doc);
+	            }) 
+	            
+				return queryResults;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+
+		},
+
+		saveNew : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.post(item).then( function(res) {
+
+				if (res.ok) {
+					item.id = res.id;
+					return item;
+				} else {
+					alert('Error while inserting in Pouch');
+				}
+
+			})
+		},
+
+		getById : function(id) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.get(id)
+			.then( function(res) {
+				return res;
+			})
+			.catch( function(res) {
+				if (res.name != 'not_found') {
+					//console.error(res);
+				}
+				return null;
+			});
+
+		},
+
+		update : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.put(item)
+			.then( function(res) {
+				item._rev = res.rev;
+				return item;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+			
+		},
+
+		delete : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.remove(item)
+			.then( function(res) {
+				return null;
+			})
+			.catch( function(err) {
+				console.error(err);
+			});
+
+		},
+
+		exists : function(id) {
+			return this.getById(id).then( function(res) {
+				return {exists : (res != null)};
+			});
+		}
+
+	};
+
 
 });
 
+app.factory('LowlaFactory', function(configService) {
+
+	return {
+
+		all : function() { 
+			
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.allDocs({ include_docs : true})
+			.then( function(res) {
+
+				var queryResults = [];
+	                
+	            angular.forEach(res.rows, function(r) {
+	            	queryResults.push(r.doc);
+	            }) 
+	            
+				return queryResults;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+
+		},
+
+		saveNew : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.post(item).then( function(res) {
+
+				if (res.ok) {
+					item.id = res.id;
+					return item;
+				} else {
+					alert('Error while inserting in Pouch');
+				}
+
+			})
+		},
+
+		getById : function(id) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.get(id)
+			.then( function(res) {
+				return res;
+			})
+			.catch( function(res) {
+				if (res.name != 'not_found') {
+					//console.error(res);
+				}
+				return null;
+			});
+
+		},
+
+		update : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.put(item)
+			.then( function(res) {
+				item._rev = res.rev;
+				return item;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+			
+		},
+
+		delete : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.remove(item)
+			.then( function(res) {
+				return null;
+			})
+			.catch( function(err) {
+				console.error(err);
+			});
+
+		},
+
+		exists : function(id) {
+			return this.getById(id).then( function(res) {
+				return {exists : (res != null)};
+			});
+		}
+
+	};
+
+
+});
+
+//polyfill for indexOf function
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
 
 // Production steps of ECMA-262, Edition 5, 15.4.4.14
 // Reference: http://es5.github.io/#x15.4.4.14
@@ -247,51 +488,40 @@ if (!Array.prototype.indexOf) {
   };
 }
 
-/* xcomponents 1.0.0 2015-01-21 10:41 */
-console.log('factories');
 
-var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
+var app = angular.module('xcontrols');
 
-app.factory('RESTFactory', function($http) {
+app.factory('xcUtils', function($rootScope) {
 
 	return {
 
-		all : function(url) { 
-			//url = url.replace(":id", )
-			return $http.get(url).then( function(res) {
-				return res.data;
-			});
+		getConfig : function(param) {
+			if ($rootScope.config) {
+				return $rootScope.config[param];
+			}
+		},
 
+		calculateFormFields : function(form) {
+
+			//add computed fields: get the list of fields that need to be computed
+			var f = $rootScope.config['fieldsFormula'];
+
+			for (var i=0; i<f.length; i++) {
+				
+				var fieldName = f[i].field;
+				var fields = f[i].formula;
+				var _res = [];
+
+				for (var j=0; j<fields.length; j++) {
+					_res.push( form[ fields[j] ] );
+				}
+
+				form[fieldName] = _res.join(' ');
+
+			}
 		}
 
 	};
-
-
-});
-
-app.factory('PouchFactory', function(pouchDB) {
-
-	return {
-
-		all : function(url) { 
-
-			var db = pouchDB(url);
-
-			return db.allDocs({ include_docs : true}).then( function(res) {
-
-				var queryResults = [];
-	                
-	            angular.forEach(res.rows, function(r) {
-	            	queryResults.push(r.doc);
-	            }) 
-	            
-				return queryResults;
-			});
-
-		}
-
-	};
-
 
 });
 
@@ -572,7 +802,9 @@ app.directive('xcFooter', function() {
 
 var app = angular.module('xcontrols');
 
-app.directive('xcForm', function($rootScope, $resource) {
+app.directive('xcForm', 
+	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	return {
 
@@ -586,6 +818,7 @@ app.directive('xcForm', function($rootScope, $resource) {
 			iconField : '@',				/*icon*/ 
 			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
 			allowDelete : '=?',
+			datastoreType : '@'
 
 		},
 
@@ -593,19 +826,11 @@ app.directive('xcForm', function($rootScope, $resource) {
 		restrict : 'E',
 		templateUrl: 'xc-form.html',
 
-		controller : function($scope, $resource, xcUtils) {
+		controller : function($scope, $attrs, xcUtils) {
 
 			//set defaults
+			configService.setEndpoint( $scope.url);
 			$scope.allowDelete = (typeof $scope.allowDelete == 'undefined' ? true : $scope.allowDelete);
-			
-			// Define Card resource 
-			var CardData = $resource( $scope.url,
-				{ id : '@id'},
-				{
-			  		'exists' : { method :'GET' , url : $scope.url + '/exists'} ,
-			  		'update' : { method : 'PUT', url : $scope.url.substring( 0, $scope.url.indexOf(':')-1 ) }
-			  	}
-			);
 
 			$scope.selectedItem = null;
 			$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
@@ -640,39 +865,49 @@ app.directive('xcForm', function($rootScope, $resource) {
 			//load specified entry 
 			if (typeof $scope.itemId != 'undefined' ) {
 
-				CardData.exists( { id : $scope.itemId }).$promise
-					.then( function(res) {
-						
-						if (res.exists) {
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
 
-							//open existing data object
+				f.exists( $scope.itemId)
+				.then( function(res) {
 
-							$scope.isNew = false;
+					if (res.exists) {
 
-							CardData.get( { id : $scope.itemId }).$promise
-								.then( function(item) {
-									$scope.selectedItem = item;
+						//open existing data object
 
-									if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
-										$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
-									}
+						$scope.isNew = false;
 
-									angular.forEach($scope.fieldsEdit, function(fld) {
-										//convert date fields (stored as strings) to JS date objects
-										if (fld.type == 'date') {
-											$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
-										}
-									});
+						f.getById($scope.itemId)
+						.then( function(item) {
 
-								});
-						} else {
+							console.log('got', item);
 
-							//create new object
-							$scope.selectedItem = { id : $scope.itemId } ;
-							$scope.isNew = true;
-						}
+							$scope.selectedItem = item;
 
-					});
+							if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
+								$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
+							}
+
+							angular.forEach($scope.fieldsEdit, function(fld) {
+								//convert date fields (stored as strings) to JS date objects
+								if (fld.type == 'date') {
+									$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+								}
+							});
+
+						});
+					} else {
+
+						//create new object
+						$scope.selectedItem = { id : $scope.itemId } ;
+						$scope.isNew = true;
+					}
+
+				});
 				
 				
 			}
@@ -698,8 +933,17 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 				xcUtils.calculateFormFields($scope.selectedItem);
 
-				CardData.update($scope.selectedItem).$promise
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
+				f.update( $scope.selectedItem)
 				.then( function(res) {
+
+					$scope.selectedItem = res;
 
 					$(modalId).modal('hide');
 					$scope.isNew = false;
@@ -712,15 +956,24 @@ app.directive('xcForm', function($rootScope, $resource) {
 			};
 
 			$scope.deleteItem = function() {
-				
+
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
 				//delete the item
-				CardData.delete( { id : $scope.selectedItem.id } );
+				f.delete( $scope.selectedItem)
+				.then( function(res) {
+					$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
-				$scope.$emit('deleteItemEvent', $scope.selectedItem);
+					//clear the selected item
+					$scope.selectedItem = null;
 
-				//remove the selected item 
-				$scope.selectedItem = null;
-
+				});
+				
 			};
 
 		},
@@ -731,7 +984,7 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 	};
 
-});
+}]);
 
 app.directive('animateOnChange', function($animate) {
 	return function(scope, elem, attr) {
@@ -862,7 +1115,9 @@ app.directive('xcImage', function() {
 });
 var app = angular.module("xcontrols");
 
-app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactory) {
+app.directive('xcList', 
+	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	//function to sort an array of objects on a specific property and order
 	var sortBy = function(orderBy, orderReversed) {
@@ -964,6 +1219,8 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 		link : function(scope, elem, attrs) {
 
+			configService.setEndpoint( attrs.url);
+
 			scope.colLeft = 'col-sm-' + attrs.listWidth;
 			scope.colRight = 'col-sm-' + (12 - parseInt(attrs.listWidth, 10) );
 			
@@ -980,17 +1237,13 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 			} else {
 
 				var f = null;
-
-				if (attrs.datastoreType == 'pouch') {
-
-					f = PouchFactory;
-
+				if (attrs.datastoreType=='pouch') {
+					f=PouchFactory;
 				} else {
-
-					f = RESTFactory;
+					f=RESTFactory;
 				}
-		
-				f.all(attrs.url).then( function(res) {
+			
+				f.all().then( function(res) {
 		
 					var numRes = res.length;
 
@@ -1052,7 +1305,7 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 		},
 
-		controller: function($rootScope, $scope, $resource, xcUtils) {
+		controller: function($rootScope, $scope, xcUtils) {
 
 			$scope.hideList = false;
 
@@ -1173,7 +1426,14 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 				xcUtils.calculateFormFields($scope.newItem);
 
-				$resource($scope.url).save($scope.newItem).$promise
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
+				f.saveNew( $scope.newItem )
 				.then( function(res) {
 
 					$(modalId).modal('hide');
@@ -1221,7 +1481,8 @@ app.directive("xcList", function($rootScope, $resource, RESTFactory, PouchFactor
 
 	};
 
-});
+}]);
+
 
 var app = angular.module('xcontrols');
 
@@ -2015,7 +2276,7 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "\n" +
     "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
     "\n" +
-    "						<p class=\"list-group-item-text\">{{item[detailsField]}}</p>\n" +
+    "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "						\n" +
     "					</a>\n" +
     "\n" +
@@ -2142,7 +2403,7 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "\n" +
     "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
     "\n" +
-    "						<p class=\"list-group-item-text\">{{item[detailsField]}}</p>\n" +
+    "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "						\n" +
     "					</a>\n" +
     "\n" +
@@ -2397,7 +2658,7 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "\n" +
     "					<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
     "\n" +
-    "					<p class=\"list-group-item-text\">{{item[detailsField]}}</p>\n" +
+    "					<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "					\n" +
     "				</a>\n" +
     "\n" +

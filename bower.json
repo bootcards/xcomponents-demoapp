@@ -24,7 +24,8 @@
     "blueimp-load-image": "~1.13.0",
     "angular-bootstrap": "~0.12.0",
     "pouchdb": "~3.2.1",
-    "angular-pouchdb": "~1.0.2"
+    "angular-pouchdb": "~1.0.2",
+    "lowladb": "~0.1.0"
   },
   "resolutions": {
     "angular": "1.3.4"

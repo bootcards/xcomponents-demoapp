@@ -1,7 +1,9 @@
 
 var app = angular.module('xcontrols');
 
-app.directive('xcForm', function($rootScope, $resource) {
+app.directive('xcForm', 
+	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	return {
 
@@ -15,6 +17,7 @@ app.directive('xcForm', function($rootScope, $resource) {
 			iconField : '@',				/*icon*/ 
 			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
 			allowDelete : '=?',
+			datastoreType : '@'
 
 		},
 
@@ -22,19 +25,11 @@ app.directive('xcForm', function($rootScope, $resource) {
 		restrict : 'E',
 		templateUrl: 'xc-form.html',
 
-		controller : function($scope, $resource, xcUtils) {
+		controller : function($scope, $attrs, xcUtils) {
 
 			//set defaults
+			configService.setEndpoint( $scope.url);
 			$scope.allowDelete = (typeof $scope.allowDelete == 'undefined' ? true : $scope.allowDelete);
-			
-			// Define Card resource 
-			var CardData = $resource( $scope.url,
-				{ id : '@id'},
-				{
-			  		'exists' : { method :'GET' , url : $scope.url + '/exists'} ,
-			  		'update' : { method : 'PUT', url : $scope.url.substring( 0, $scope.url.indexOf(':')-1 ) }
-			  	}
-			);
 
 			$scope.selectedItem = null;
 			$scope.fieldsRead = xcUtils.getConfig('fieldsRead');
@@ -69,39 +64,49 @@ app.directive('xcForm', function($rootScope, $resource) {
 			//load specified entry 
 			if (typeof $scope.itemId != 'undefined' ) {
 
-				CardData.exists( { id : $scope.itemId }).$promise
-					.then( function(res) {
-						
-						if (res.exists) {
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
 
-							//open existing data object
+				f.exists( $scope.itemId)
+				.then( function(res) {
 
-							$scope.isNew = false;
+					if (res.exists) {
 
-							CardData.get( { id : $scope.itemId }).$promise
-								.then( function(item) {
-									$scope.selectedItem = item;
+						//open existing data object
 
-									if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
-										$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
-									}
+						$scope.isNew = false;
 
-									angular.forEach($scope.fieldsEdit, function(fld) {
-										//convert date fields (stored as strings) to JS date objects
-										if (fld.type == 'date') {
-											$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
-										}
-									});
+						f.getById($scope.itemId)
+						.then( function(item) {
 
-								});
-						} else {
+							console.log('got', item);
 
-							//create new object
-							$scope.selectedItem = { id : $scope.itemId } ;
-							$scope.isNew = true;
-						}
+							$scope.selectedItem = item;
 
-					});
+							if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
+								$scope.thumbnailSrc = xcUtils.getConfig('imageBase') + item[$scope.thumbnailField];
+							}
+
+							angular.forEach($scope.fieldsEdit, function(fld) {
+								//convert date fields (stored as strings) to JS date objects
+								if (fld.type == 'date') {
+									$scope.selectedItem[fld.field] = new Date( $scope.selectedItem[fld.field]);
+								}
+							});
+
+						});
+					} else {
+
+						//create new object
+						$scope.selectedItem = { id : $scope.itemId } ;
+						$scope.isNew = true;
+					}
+
+				});
 				
 				
 			}
@@ -127,8 +132,17 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 				xcUtils.calculateFormFields($scope.selectedItem);
 
-				CardData.update($scope.selectedItem).$promise
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
+				f.update( $scope.selectedItem)
 				.then( function(res) {
+
+					$scope.selectedItem = res;
 
 					$(modalId).modal('hide');
 					$scope.isNew = false;
@@ -141,15 +155,24 @@ app.directive('xcForm', function($rootScope, $resource) {
 			};
 
 			$scope.deleteItem = function() {
-				
+
+				var f = null;
+				if ($scope.datastoreType=='pouch') {
+					f=PouchFactory;
+				} else {
+					f=RESTFactory;
+				}
+
 				//delete the item
-				CardData.delete( { id : $scope.selectedItem.id } );
+				f.delete( $scope.selectedItem)
+				.then( function(res) {
+					$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
-				$scope.$emit('deleteItemEvent', $scope.selectedItem);
+					//clear the selected item
+					$scope.selectedItem = null;
 
-				//remove the selected item 
-				$scope.selectedItem = null;
-
+				});
+				
 			};
 
 		},
@@ -160,7 +183,7 @@ app.directive('xcForm', function($rootScope, $resource) {
 
 	};
 
-});
+}]);
 
 app.directive('animateOnChange', function($animate) {
 	return function(scope, elem, attr) {
