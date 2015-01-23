@@ -65,10 +65,13 @@ app.directive('xcForm',
 			if (typeof $scope.itemId != 'undefined' ) {
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( attrs.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.exists( $scope.itemId)
@@ -133,10 +136,13 @@ app.directive('xcForm',
 				xcUtils.calculateFormFields($scope.selectedItem);
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.update( $scope.selectedItem)
@@ -146,6 +152,8 @@ app.directive('xcForm',
 
 					$(modalId).modal('hide');
 					$scope.isNew = false;
+
+					$scope.$apply();
 
 				})
 				.catch( function(err) {
@@ -157,21 +165,32 @@ app.directive('xcForm',
 			$scope.deleteItem = function() {
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				//delete the item
 				f.delete( $scope.selectedItem)
 				.then( function(res) {
+
+					//console.log('deleted !', $scope.selectedItem);
+
 					$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
 					//clear the selected item
 					$scope.selectedItem = null;
 
-				});
+				})
+				.catch( function(err) {
+					console.error(err);
+				})
+
+
 				
 			};
 

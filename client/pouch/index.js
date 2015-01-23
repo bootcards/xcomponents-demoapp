@@ -14,35 +14,37 @@ xcontrols.charts['closed-sales'] = [
 var app = angular.module('xcontrols');
 
 //extend controller
-app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB) {
+app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB, PouchFactory, configService) {
 
-	$controller('xcController', { $scope: $scope });
+	$controller('xcController', { $scope: $scope } );
 
     $scope.numContacts = 0;
 
-    var db = pouchDB('example');
+    configService.setEndpoint( "example" );
 
     //get number of contacts in the local pouchdb
-    db.info().then( function(res) {
-    	$scope.numContacts = res.doc_count;
-    })
+    PouchFactory.info().then( function(res) {
+      $scope.numContacts = res.count;
+    });
 
-    $scope.loadPouchData = function() {
+    $scope.loadData = function() {
 
-    	//load data from (mongo) REST API to fill local pouch db
-		var db = pouchDB('example');
+      //load data from (mongo) REST API to fill local pouch db
+  		var db = pouchDB('example');
 
-		$http.get('/api/Contacts').then( function( data ) {
+  		$http.get('/api/Contacts').then( function( data ) {
 
-			db.bulkDocs(data.data).then( function(res) { 
-				$scope.numContacts = res.length;
-			});
-		 
-		});
+        PouchFactory.insert( data.data).then( function(res) {
+          PouchFactory.info().then( function(res) {
+            $scope.numContacts = res.count;
+          });
+        });
+  		 
+  		});
 
     };
 
-    $scope.clearPouchData = function() {
+    $scope.clearData = function() {
 
     	var db = pouchDB('example');
     	db.destroy().then( function(res) {

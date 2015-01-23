@@ -18,8 +18,9 @@
 
 	<xc-header title="Contacts"></xc-header>
 
+<!-- url="/api/Contacts" -->
 	<xc-list
-		datastore-type="pouch"
+		datastore-type="lowla"
 		url="example"
 		title="People"
 		list-width="5" 
@@ -34,8 +35,9 @@
 		autoload-first="true"
 		type="flat">
 
+<!-- url="/api/Contacts/:id"  -->
 		<xc-form 
-			datastore-type="pouch"
+			datastore-type="lowla"
 			url="example"
 			default-text="Select a contact from the list"
 			thumbnail-field="thumbnailUrl"
@@ -53,5 +55,6 @@
 			Contacts
 		</a>     
 	</xc-footer>
+	
 	
 </body></html>

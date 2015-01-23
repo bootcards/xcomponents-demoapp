@@ -1,7 +1,7 @@
 
 var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
 
-app.service('configService', function() {
+app.service('configService', [ function() {
 
     var endpoint = '/null';
 
@@ -15,17 +15,34 @@ app.service('configService', function() {
 	   
 	};
 
-});
+} ] );
 
-app.factory('RESTFactory', function($http, configService) {
+app.factory('RESTFactory', ['$http', 'configService', function($http, configService) {
 
 	return {
+
+		info : function() {
+
+			var url = configService.endpoint.replace(":id", "") + 'count';
+
+			return $http.get(url).then( function(res) {
+				return { 'count' : res.data.count};
+			});
+
+		},
+
+		insert : function(toInsert) {
+			console.error('not implemented');
+		},
 
 		all : function() { 
 
 			var url = configService.endpoint.replace(":id", "");
 
+			console.log('querying REST service at ' + url);
+
 			return $http.get(url).then( function(res) {
+				console.log('returning '  + res.data.length + ' items');
 				return res.data;
 			});
 
@@ -56,6 +73,12 @@ app.factory('RESTFactory', function($http, configService) {
 			return $http.delete(url);
 		},
 
+		deleteAll : function() {
+
+			console.error('not implemented');
+			
+		},
+
 		getById : function(id) {
 
 			var url = configService.endpoint.replace(":id", id);
@@ -77,25 +100,51 @@ app.factory('RESTFactory', function($http, configService) {
 
 	};
 
-} );
+} ] );
 
-app.factory('PouchFactory', function(pouchDB, configService) {
+app.factory('PouchFactory', ['pouchDB', 'configService', function(pouchDB, configService) {
 
 	return {
+
+		info : function() {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.info()
+			.then( function(res) {
+				return { count : res['doc_count'] };
+			})
+			.catch( function(err) {
+				console.error(err);
+				return {};
+			});
+
+		},
+
+		insert : function( toInsert ) {
+			var dbName = configService.endpoint;
+			var pouch = pouchDB(dbName);
+			return pouch.bulkDocs(toInsert);
+		},
 
 		all : function() { 
 			
 			var dbName = configService.endpoint;
 			var db = pouchDB(dbName);
 
-			return db.allDocs({ include_docs : true})
+			console.log('querying Pouch database named ' + dbName);
+
+			return db.allDocs({ 'include_docs' : true})
 			.then( function(res) {
 
 				var queryResults = [];
 	                
 	            angular.forEach(res.rows, function(r) {
 	            	queryResults.push(r.doc);
-	            }) 
+	            });
+
+	            console.log('returning ' + queryResults.length + ' results');
 	            
 				return queryResults;
 			})
@@ -173,6 +222,12 @@ app.factory('PouchFactory', function(pouchDB, configService) {
 
 		},
 
+		deleteAll : function() {
+
+			console.error('not implemented');
+
+		},
+
 		exists : function(id) {
 			return this.getById(id).then( function(res) {
 				return {exists : (res != null)};
@@ -182,31 +237,52 @@ app.factory('PouchFactory', function(pouchDB, configService) {
 	};
 
 
-});
+}] );
 
-app.factory('LowlaFactory', function(configService) {
+app.factory('LowlaFactory', ['configService', function(configService) {
+
+	var collection = 'items';
+	var lowla = null;
 
 	return {
 
-		all : function() { 
-			
+		getDb : function() {
+			if (this.lowla == null) {
+				this.lowla = new LowlaDB();
+			}
+			return this.lowla;
+		},
+
+		info : function() {
+
 			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
+			var items = this.getDb().collection(dbName, collection);
 
-			return db.allDocs({ include_docs : true})
-			.then( function(res) {
+			return items.count().then(function(res) {
+				return {count : res};
+			});
 
-				var queryResults = [];
-	                
-	            angular.forEach(res.rows, function(r) {
-	            	queryResults.push(r.doc);
-	            }) 
-	            
-				return queryResults;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
+		},
+
+		insert : function( toInsert ) {
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+			return items.insert(toInsert);
+		},
+
+		all : function() { 
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			console.log('querying Lowla database named ' + dbName);
+
+			//var syncServer = location.protocol + '//' + location.hostname + ":3001";
+			//this.getDb().sync(syncServer);
+
+			return items.find().toArray().then( function(res) {
+				console.log('returning ' + res.length + ' results');
+				return res;
 			});
 
 		},
@@ -214,9 +290,14 @@ app.factory('LowlaFactory', function(configService) {
 		saveNew : function(item) {
 
 			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
+			var items = this.getDb().collection(dbName, collection);
 
-			return db.post(item).then( function(res) {
+			//need to remove this property, else Lowla will throw an error
+			delete item['$$hashKey'];
+
+			return items.insert(item);
+			
+			/*return db.post(item).then( function(res) {
 
 				if (res.ok) {
 					item.id = res.id;
@@ -225,57 +306,68 @@ app.factory('LowlaFactory', function(configService) {
 					alert('Error while inserting in Pouch');
 				}
 
-			})
+			})*/
 		},
 
 		getById : function(id) {
 
 			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
+			var items = this.getDb().collection(dbName, collection);
 
-			return db.get(id)
-			.then( function(res) {
-				return res;
-			})
-			.catch( function(res) {
-				if (res.name != 'not_found') {
-					//console.error(res);
-				}
-				return null;
-			});
+			return items.find( { _id : id});
 
 		},
 
 		update : function(item) {
 
 			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
+			var items = this.getDb().collection(dbName, collection);
 
-			return db.put(item)
-			.then( function(res) {
-				item._rev = res.rev;
-				return item;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
-			});
+			//need to remove this property, else Lowla will throw an error
+			delete item['$$hashKey'];
+
+			return items.insert(
+				item,
+				function(doc) {
+					//console.log('inserted', doc);
+				},
+				function(err) {
+					console.error('error while inserting', err);
+				}
+			);
 			
 		},
 
 		delete : function(item) {
 
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
 
-			return db.remove(item)
-			.then( function(res) {
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.remove( { _id : item._id } ).then( function(res) {
+				console.log('ok', res);
 				return null;
-			})
-			.catch( function(err) {
+			}, function(err) {
 				console.error(err);
 			});
 
+		},
+
+		deleteAll : function() {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.remove({})
+			.then( function(res) {
+				console.log('deleted all');
+				return res;
+			}, function(err) {
+				console.error(err);
+				return null;
+
+			});
+			
 		},
 
 		exists : function(id) {
@@ -287,4 +379,4 @@ app.factory('LowlaFactory', function(configService) {
 	};
 
 
-});
+}]);

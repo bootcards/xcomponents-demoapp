@@ -8,9 +8,8 @@ app.directive('xcList',
 	var sortBy = function(orderBy, orderReversed) {
 
 		return function(a,b) {
-
-			var _a = a[orderBy].toLowerCase();
-			var _b = b[orderBy].toLowerCase();
+			var _a = (a[orderBy] || '').toLowerCase();
+			var _b = (b[orderBy] || '').toLowerCase();
 			var modifier = (orderReversed ? -1 : 1);
 			if ( _a < _b )
 				return -1 * modifier;
@@ -50,8 +49,8 @@ app.directive('xcList',
 
 	    //sort groups by group name
     	groups.sort( function(a,b) {	
-			var _n1 = a['name'];
-			var _n2 = b['name'];
+			var _n1 = (a['name'] || '');
+			var _n2 = (b['name'] || '');
 
 			return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
     	} );
@@ -122,16 +121,19 @@ app.directive('xcList',
 			} else {
 
 				var f = null;
-				if (attrs.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( attrs.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 			
 				f.all().then( function(res) {
-		
+					
 					var numRes = res.length;
-
+					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
 						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
@@ -144,9 +146,8 @@ app.directive('xcList',
 
 					} else {			//flat or detailed
 
-
 						if (scope.filterBy && scope.filterValue) {
-							//filter the resultset
+							//filter the result set
 							
 							var filteredRes = [];
 
@@ -312,10 +313,13 @@ app.directive('xcList',
 				xcUtils.calculateFormFields($scope.newItem);
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.saveNew( $scope.newItem )

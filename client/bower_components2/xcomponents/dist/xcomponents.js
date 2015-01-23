@@ -1,3 +1,386 @@
+/* xcomponents 1.0.0 2015-01-23 2:33 */
+
+var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
+
+app.service('configService', [ function() {
+
+    var endpoint = '/null';
+
+    return {
+
+	    setEndpoint : function(url) {
+	    	this.endpoint = url;
+	    },
+
+	    endpoint : endpoint
+	   
+	};
+
+} ] );
+
+app.factory('RESTFactory', ['$http', 'configService', function($http, configService) {
+
+	return {
+
+		info : function() {
+
+			var url = configService.endpoint.replace(":id", "") + 'count';
+
+			return $http.get(url).then( function(res) {
+				return { 'count' : res.data.count};
+			});
+
+		},
+
+		insert : function(toInsert) {
+			console.error('not implemented');
+		},
+
+		all : function() { 
+
+			var url = configService.endpoint.replace(":id", "");
+
+			console.log('querying REST service at ' + url);
+
+			return $http.get(url).then( function(res) {
+				console.log('returning '  + res.data.length + ' items');
+				return res.data;
+			});
+
+		},
+
+		saveNew : function(item) {
+			
+			var url = configService.endpoint.replace(":id", "");
+
+			return $http.post(url, item).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		update : function(item) {
+		
+			var url = configService.endpoint.replace(":id", "");
+
+			return $http.put(url, item).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		delete : function(item) {
+			var url = configService.endpoint.replace(":id", item.id);
+			return $http.delete(url);
+		},
+
+		deleteAll : function() {
+
+			console.error('not implemented');
+			
+		},
+
+		getById : function(id) {
+
+			var url = configService.endpoint.replace(":id", id);
+
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+
+		},
+
+		exists : function(id) {
+
+			var url = configService.endpoint.replace(":id", id) + '/exists';
+
+			return $http.get(url).then( function(res) {
+				return res.data;
+			});
+		}
+
+	};
+
+} ] );
+
+app.factory('PouchFactory', ['pouchDB', 'configService', function(pouchDB, configService) {
+
+	return {
+
+		info : function() {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.info()
+			.then( function(res) {
+				return { count : res['doc_count'] };
+			})
+			.catch( function(err) {
+				console.error(err);
+				return {};
+			});
+
+		},
+
+		insert : function( toInsert ) {
+			var dbName = configService.endpoint;
+			var pouch = pouchDB(dbName);
+			return pouch.bulkDocs(toInsert);
+		},
+
+		all : function() { 
+			
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			console.log('querying Pouch database named ' + dbName);
+
+			return db.allDocs({ 'include_docs' : true})
+			.then( function(res) {
+
+				var queryResults = [];
+	                
+	            angular.forEach(res.rows, function(r) {
+	            	queryResults.push(r.doc);
+	            });
+
+	            console.log('returning ' + queryResults.length + ' results');
+	            
+				return queryResults;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+
+		},
+
+		saveNew : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.post(item).then( function(res) {
+
+				if (res.ok) {
+					item.id = res.id;
+					return item;
+				} else {
+					alert('Error while inserting in Pouch');
+				}
+
+			})
+		},
+
+		getById : function(id) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.get(id)
+			.then( function(res) {
+				return res;
+			})
+			.catch( function(res) {
+				if (res.name != 'not_found') {
+					//console.error(res);
+				}
+				return null;
+			});
+
+		},
+
+		update : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.put(item)
+			.then( function(res) {
+				item._rev = res.rev;
+				return item;
+			})
+			.catch( function(err) {
+				console.error(err);
+				return null;
+			});
+			
+		},
+
+		delete : function(item) {
+
+			var dbName = configService.endpoint;
+			var db = pouchDB(dbName);
+
+			return db.remove(item)
+			.then( function(res) {
+				return null;
+			})
+			.catch( function(err) {
+				console.error(err);
+			});
+
+		},
+
+		deleteAll : function() {
+
+			console.error('not implemented');
+
+		},
+
+		exists : function(id) {
+			return this.getById(id).then( function(res) {
+				return {exists : (res != null)};
+			});
+		}
+
+	};
+
+
+}] );
+
+app.factory('LowlaFactory', ['configService', function(configService) {
+
+	var collection = 'items';
+	var lowla = null;
+
+	return {
+
+		getDb : function() {
+			if (this.lowla == null) {
+				this.lowla = new LowlaDB();
+			}
+			return this.lowla;
+		},
+
+		info : function() {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.count().then(function(res) {
+				return {count : res};
+			});
+
+		},
+
+		insert : function( toInsert ) {
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+			return items.insert(toInsert);
+		},
+
+		all : function() { 
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			console.log('querying Lowla database named ' + dbName);
+
+			//var syncServer = location.protocol + '//' + location.hostname + ":3001";
+			//this.getDb().sync(syncServer);
+
+			return items.find().toArray().then( function(res) {
+				console.log('returning ' + res.length + ' results');
+				return res;
+			});
+
+		},
+
+		saveNew : function(item) {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			//need to remove this property, else Lowla will throw an error
+			delete item['$$hashKey'];
+
+			return items.insert(item);
+			
+			/*return db.post(item).then( function(res) {
+
+				if (res.ok) {
+					item.id = res.id;
+					return item;
+				} else {
+					alert('Error while inserting in Pouch');
+				}
+
+			})*/
+		},
+
+		getById : function(id) {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.find( { _id : id});
+
+		},
+
+		update : function(item) {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			//need to remove this property, else Lowla will throw an error
+			delete item['$$hashKey'];
+
+			return items.insert(
+				item,
+				function(doc) {
+					//console.log('inserted', doc);
+				},
+				function(err) {
+					console.error('error while inserting', err);
+				}
+			);
+			
+		},
+
+		delete : function(item) {
+
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.remove( { _id : item._id } ).then( function(res) {
+				console.log('ok', res);
+				return null;
+			}, function(err) {
+				console.error(err);
+			});
+
+		},
+
+		deleteAll : function() {
+
+			var dbName = configService.endpoint;
+			var items = this.getDb().collection(dbName, collection);
+
+			return items.remove({})
+			.then( function(res) {
+				console.log('deleted all');
+				return res;
+			}, function(err) {
+				console.error(err);
+				return null;
+
+			});
+			
+		},
+
+		exists : function(id) {
+			return this.getById(id).then( function(res) {
+				return {exists : (res != null)};
+			});
+		}
+
+	};
+
+
+}]);
 /*
  * Main XComponents module
  *
@@ -127,297 +510,6 @@ app.run( function() {
 });
 
 
-/* xcomponents 1.0.0 2015-01-22 12:28 */
-
-var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
-
-app.service('configService', function() {
-
-    var endpoint = '/null';
-
-    return {
-
-	    setEndpoint : function(url) {
-	    	this.endpoint = url;
-	    },
-
-	    endpoint : endpoint
-	   
-	};
-
-});
-
-app.factory('RESTFactory', function($http, configService) {
-
-	return {
-
-		all : function() { 
-
-			var url = configService.endpoint.replace(":id", "");
-
-			return $http.get(url).then( function(res) {
-				return res.data;
-			});
-
-		},
-
-		saveNew : function(item) {
-			
-			var url = configService.endpoint.replace(":id", "");
-
-			return $http.post(url, item).then( function(res) {
-				return res.data;
-			});
-
-		},
-
-		update : function(item) {
-		
-			var url = configService.endpoint.replace(":id", "");
-
-			return $http.put(url, item).then( function(res) {
-				return res.data;
-			});
-
-		},
-
-		delete : function(item) {
-			var url = configService.endpoint.replace(":id", item.id);
-			return $http.delete(url);
-		},
-
-		getById : function(id) {
-
-			var url = configService.endpoint.replace(":id", id);
-
-			return $http.get(url).then( function(res) {
-				return res.data;
-			});
-
-		},
-
-		exists : function(id) {
-
-			var url = configService.endpoint.replace(":id", id) + '/exists';
-
-			return $http.get(url).then( function(res) {
-				return res.data;
-			});
-		}
-
-	};
-
-} );
-
-app.factory('PouchFactory', function(pouchDB, configService) {
-
-	return {
-
-		all : function() { 
-			
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.allDocs({ include_docs : true})
-			.then( function(res) {
-
-				var queryResults = [];
-	                
-	            angular.forEach(res.rows, function(r) {
-	            	queryResults.push(r.doc);
-	            }) 
-	            
-				return queryResults;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
-			});
-
-		},
-
-		saveNew : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.post(item).then( function(res) {
-
-				if (res.ok) {
-					item.id = res.id;
-					return item;
-				} else {
-					alert('Error while inserting in Pouch');
-				}
-
-			})
-		},
-
-		getById : function(id) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.get(id)
-			.then( function(res) {
-				return res;
-			})
-			.catch( function(res) {
-				if (res.name != 'not_found') {
-					//console.error(res);
-				}
-				return null;
-			});
-
-		},
-
-		update : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.put(item)
-			.then( function(res) {
-				item._rev = res.rev;
-				return item;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
-			});
-			
-		},
-
-		delete : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.remove(item)
-			.then( function(res) {
-				return null;
-			})
-			.catch( function(err) {
-				console.error(err);
-			});
-
-		},
-
-		exists : function(id) {
-			return this.getById(id).then( function(res) {
-				return {exists : (res != null)};
-			});
-		}
-
-	};
-
-
-});
-
-app.factory('LowlaFactory', function(configService) {
-
-	return {
-
-		all : function() { 
-			
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.allDocs({ include_docs : true})
-			.then( function(res) {
-
-				var queryResults = [];
-	                
-	            angular.forEach(res.rows, function(r) {
-	            	queryResults.push(r.doc);
-	            }) 
-	            
-				return queryResults;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
-			});
-
-		},
-
-		saveNew : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.post(item).then( function(res) {
-
-				if (res.ok) {
-					item.id = res.id;
-					return item;
-				} else {
-					alert('Error while inserting in Pouch');
-				}
-
-			})
-		},
-
-		getById : function(id) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.get(id)
-			.then( function(res) {
-				return res;
-			})
-			.catch( function(res) {
-				if (res.name != 'not_found') {
-					//console.error(res);
-				}
-				return null;
-			});
-
-		},
-
-		update : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.put(item)
-			.then( function(res) {
-				item._rev = res.rev;
-				return item;
-			})
-			.catch( function(err) {
-				console.error(err);
-				return null;
-			});
-			
-		},
-
-		delete : function(item) {
-
-			var dbName = configService.endpoint;
-			var db = pouchDB(dbName);
-
-			return db.remove(item)
-			.then( function(res) {
-				return null;
-			})
-			.catch( function(err) {
-				console.error(err);
-			});
-
-		},
-
-		exists : function(id) {
-			return this.getById(id).then( function(res) {
-				return {exists : (res != null)};
-			});
-		}
-
-	};
-
-
-});
 
 //polyfill for indexOf function
 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
@@ -866,10 +958,13 @@ app.directive('xcForm',
 			if (typeof $scope.itemId != 'undefined' ) {
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( attrs.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.exists( $scope.itemId)
@@ -934,10 +1029,13 @@ app.directive('xcForm',
 				xcUtils.calculateFormFields($scope.selectedItem);
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.update( $scope.selectedItem)
@@ -947,6 +1045,8 @@ app.directive('xcForm',
 
 					$(modalId).modal('hide');
 					$scope.isNew = false;
+
+					$scope.$apply();
 
 				})
 				.catch( function(err) {
@@ -958,21 +1058,32 @@ app.directive('xcForm',
 			$scope.deleteItem = function() {
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				//delete the item
 				f.delete( $scope.selectedItem)
 				.then( function(res) {
+
+					//console.log('deleted !', $scope.selectedItem);
+
 					$scope.$emit('deleteItemEvent', $scope.selectedItem);
 
 					//clear the selected item
 					$scope.selectedItem = null;
 
-				});
+				})
+				.catch( function(err) {
+					console.error(err);
+				})
+
+
 				
 			};
 
@@ -1123,9 +1234,8 @@ app.directive('xcList',
 	var sortBy = function(orderBy, orderReversed) {
 
 		return function(a,b) {
-
-			var _a = a[orderBy].toLowerCase();
-			var _b = b[orderBy].toLowerCase();
+			var _a = (a[orderBy] || '').toLowerCase();
+			var _b = (b[orderBy] || '').toLowerCase();
 			var modifier = (orderReversed ? -1 : 1);
 			if ( _a < _b )
 				return -1 * modifier;
@@ -1165,8 +1275,8 @@ app.directive('xcList',
 
 	    //sort groups by group name
     	groups.sort( function(a,b) {	
-			var _n1 = a['name'];
-			var _n2 = b['name'];
+			var _n1 = (a['name'] || '');
+			var _n2 = (b['name'] || '');
 
 			return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
     	} );
@@ -1237,16 +1347,19 @@ app.directive('xcList',
 			} else {
 
 				var f = null;
-				if (attrs.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( attrs.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 			
 				f.all().then( function(res) {
-		
+					
 					var numRes = res.length;
-
+					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
 						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
@@ -1259,9 +1372,8 @@ app.directive('xcList',
 
 					} else {			//flat or detailed
 
-
 						if (scope.filterBy && scope.filterValue) {
-							//filter the resultset
+							//filter the result set
 							
 							var filteredRes = [];
 
@@ -1427,10 +1539,13 @@ app.directive('xcList',
 				xcUtils.calculateFormFields($scope.newItem);
 
 				var f = null;
-				if ($scope.datastoreType=='pouch') {
-					f=PouchFactory;
-				} else {
-					f=RESTFactory;
+				switch( $scope.datastoreType) {
+					case 'pouch':
+						f=PouchFactory; break;
+					case 'lowla':
+						f=LowlaFactory; break;
+					default:
+						f=RESTFactory; break;
 				}
 
 				f.saveNew( $scope.newItem )
@@ -1483,45 +1598,6 @@ app.directive('xcList',
 
 }]);
 
-
-var app = angular.module('xcontrols');
-
-app.directive('xcLogin', function() {
-
-	return {
-
-		scope : {
-		},
-
-		replace : true,
-		restrict : 'E',
-		templateUrl : 'xc-login.html',
-
-		controller : function($scope) {
-
-			$scope.isSignedIn = false;
-
-			$scope.login = function(form, modalId) {
-
-				if (!form.$valid) { alert('Please fill in all required fields'); return; }
-
-				$(modalId).modal('hide');
-
-				console.log('sing in');
-
-			};
-
-		}
-		/*
-
-		link : function() {
-
-			console.log('link');
-		}*/
-
-	};
-
-});
 
 var app = angular.module('xcontrols');
 
@@ -1766,7 +1842,7 @@ app.directive('xcUpload', function() {
 	};
 
 });
-angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-detailed.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-login.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
+angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-detailed.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
 
 angular.module("xc-base.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("xc-base.html",
@@ -2274,7 +2350,7 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "						class=\"img-rounded pull-left\" \n" +
     "						ng-src=\"{{ imageBase + item[imageField] }}\" />\n" +
     "\n" +
-    "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
+    "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
     "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "						\n" +
@@ -2401,7 +2477,7 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "						class=\"img-rounded pull-left\" \n" +
     "						ng-src=\"{{ imageBase + item[imageField] }}\" />\n" +
     "\n" +
-    "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
+    "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
     "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "						\n" +
@@ -2643,7 +2719,7 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "\n" +
     "			<div class=\"list-group\">\n" +
     "				\n" +
-    "				<a class=\"list-group-item animate-repeat\" ng-repeat=\"item in itemsPage | filter : filter track by item.id\"  ng-click=\"select(item)\"\n" +
+    "				<a class=\"list-group-item animate-repeat\" ng-repeat=\"item in itemsPage | filter : filter\"  ng-click=\"select(item)\"\n" +
     "					ng-class=\"{'active' : selected == item}\">\n" +
     "\n" +
     "					<!--(placeholder) icon-->\n" +
@@ -2656,7 +2732,7 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "						class=\"img-rounded pull-left\" \n" +
     "						ng-src=\"{{ imageBase + item[imageField] }}\" />\n" +
     "\n" +
-    "					<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
+    "					<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
     "					<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
     "					\n" +
@@ -2794,74 +2870,6 @@ angular.module("xc-list-heading.html", []).run(["$templateCache", function($temp
     "\n" +
     "\n" +
     "	</div>		\n" +
-    "\n" +
-    "</div>");
-}]);
-
-angular.module("xc-login.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("xc-login.html",
-    "<div>\n" +
-    "\n" +
-    "	<div ng-show=\"!isSignedIn\">\n" +
-    "\n" +
-    "		You're not signed in yet.\n" +
-    "		<a class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#loginModal\">Sign in</a>\n" +
-    "\n" +
-    "	</div>\n" +
-    "\n" +
-    "	<!--modal to sign in-->\n" +
-    "	<form class=\"form-horizontal\" name=\"loginForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"loginModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"loginModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"login(loginForm, '#loginModal')\">\n" +
-    "							Login\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Sign In</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-class=\"{ 'has-error': loginForm.username.$invalid }\">\n" +
-    "\n" +
-    "						<label class=\"col-xs-3 control-label\">Username</label>\n" +
-    "						<div class=\"col-xs-9\">\n" +
-    "							<input class=\"form-control\" name=\"username\" ng-model=\"username\" ng-required=\"true\" />\n" +
-    "						</div>\n" +
-    "\n" +
-    "					</div>\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-class=\"{ 'has-error': loginForm.password.$invalid }\">\n" +
-    "\n" +
-    "						<label class=\"col-xs-3 control-label\">Password</label>\n" +
-    "						<div class=\"col-xs-9\">\n" +
-    "							<input class=\"form-control\" name=\"password\" ng-model=\"password\" ng-required=\"true\" />\n" +
-    "						</div>\n" +
-    "\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "	</form>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "	<div ng-show=\"isSignedIn\">You're signed in and good to go!</div>\n" +
     "\n" +
     "</div>");
 }]);

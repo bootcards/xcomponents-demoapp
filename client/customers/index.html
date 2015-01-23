@@ -19,12 +19,9 @@
 
 </head>
 
-<body ng-controller="xcController" class="hidden">
+<body ng-controller="xcCustomersCtrl" class="hidden">
 
-
-	<xc-header title="Customers">
-	
-	</xc-header>
+	<xc-header title="Customers"></xc-header>
 
 	<div class="container bootcards-container">
 
@@ -36,9 +33,9 @@
 
 					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-						<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="40"></xc-summary-item>
-						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="40"></xc-summary-item>
-						<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="40"></xc-summary-item>
+						<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="{{numCompanies}}"></xc-summary-item>
+						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
+						<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="{{numNotes}}"></xc-summary-item>
 						<xc-summary-item title="Charts" target="charts.html" icon="fa-bar-chart-o" count="4"></xc-summary-item>
 						<xc-summary-item title="Files" target="files.html" icon="fa-files-o" count="36"></xc-summary-item>
 						
