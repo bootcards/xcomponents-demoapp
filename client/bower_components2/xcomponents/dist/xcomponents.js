@@ -1,4 +1,4 @@
-/* xcomponents 1.0.0 2015-01-23 2:33 */
+/* xcomponents 1.0.0 2015-02-04 10:00 */
 
 var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
 
@@ -398,9 +398,17 @@ var app = angular.module('xcontrols', [
 ]);
 
 //bootstrapping code
-angular.element(document).ready(function() {
- angular.bootstrap(document, ['xcontrols']);
-});
+var hasNativeHTMLImportsSupport = ('import' in document.createElement('link'));
+
+if (hasNativeHTMLImportsSupport) {
+	angular.element(document).ready(function() {
+	 angular.bootstrap(document, ['xcontrols']);
+	});
+} else {
+	window.addEventListener('HTMLImportsLoaded', function(e){ 
+		angular.bootstrap(document, ['xcontrols']);
+	});
+}
 
 app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	
@@ -611,6 +619,73 @@ app.factory('xcUtils', function($rootScope) {
 				form[fieldName] = _res.join(' ');
 
 			}
+		},
+
+		getSortByFunction : function(orderBy, orderReversed) {
+			//function to sort an array of objects on a specific property and order
+
+			return function(a,b) {
+				
+				var _a = (a[orderBy] || '');
+				var _b = (b[orderBy] || '')
+
+				if (typeof _a === 'string') { _a = _a.toLowerCase(); }
+				if (typeof _b === 'string') { _b = _b.toLowerCase(); }
+			
+				var modifier = (orderReversed ? -1 : 1);
+				if ( _a < _b )
+					return -1 * modifier;
+				if ( _a > _b )
+					return 1 * modifier;
+				return 0;
+			};
+
+		},
+
+		getGroups : function(entries, groupBy, orderBy, orderReversed) {
+			//group an array by a property of the objects in that array
+			//returns an array containing the grouped entries
+
+			var groups = [];
+			var numEntries = entries.length;
+
+			//organise results per group
+			for (var i=0; i<numEntries; i++) {
+				var entry = entries[i];
+				var entryGroup = entry[groupBy];
+				if (!entryGroup) entryGroup="(none)";
+
+				var added = false;
+			   	for (var g in groups) {
+			     if (groups[g].name == entryGroup) {
+			        groups[g].entries.push( entry);
+			        added = true;
+			        break;
+			     }
+			   	}
+
+				if (!added) {
+					groups.push({"name": entryGroup, "collapsed" : true, "entries" : [entry] });
+				}
+			}
+
+		    //sort groups by group name
+	    	groups.sort( function(a,b) {	
+				var _n1 = (a['name'] || '');
+				var _n2 = (b['name'] || '');
+
+				return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
+	    	} );
+
+	    	var sortFunction = this.getSortByFunction( orderBy, orderReversed)
+
+	    	//now sort the entries in the group
+	    	angular.forEach(groups, function(group) {
+	    		group.entries.sort(sortFunction);
+	    	});
+
+			return groups;
+
 		}
 
 	};
@@ -894,6 +969,157 @@ app.directive('xcFooter', function() {
 
 var app = angular.module('xcontrols');
 
+app.controller('UpdateItemInstanceCtrl', 
+	['$scope', '$modalInstance', 'selectedItem', 'xcUtils', 'fieldsEdit', 'RESTFactory', 'PouchFactory', 
+	'LowlaFactory', 'scope', 'configService', 'xcUtils', 'modelName', 'isNew', 'allowDelete', 'items',
+	function ($scope, $modalInstance, selectedItem, xcUtils, fieldsEdit, RESTFactory, PouchFactory, 
+		LowlaFactory, scope, configService, xcUtils, modelName, isNew, allowDelete, items) {
+
+	if (selectedItem == null) {
+
+		//creating a new item: check for field defaults from config
+		selectedItem = {};
+
+		angular.forEach( fieldsEdit, function(field) {
+
+			if (field.hasOwnProperty('default') && field.type == 'date') {
+				switch(field['default']) {
+					case 'now':
+						selectedItem[field.field] = new Date();
+				}
+	
+			}
+		
+		});
+
+	}
+
+	$scope.selectedItem = selectedItem;
+	$scope.fieldsEdit = fieldsEdit;
+	$scope.modelName = modelName;
+	$scope.isNew = isNew;
+	$scope.allowDelete = allowDelete;
+
+	$scope.clearField = function(fld) {
+		/*clear a field*/
+		$scope.selectedItem[fld] = "";
+	};
+
+	$scope.saveItem = function(form) {
+  	
+	  	if (!form.$valid) { alert('Please fill in all required fields'); return; }
+
+		xcUtils.calculateFormFields(selectedItem);
+
+		//determine the factory to use
+		var f = null;
+		switch( scope.datastoreType) {
+			case 'pouch':
+				f=PouchFactory; break;
+			case 'lowla':
+				f=LowlaFactory; break;
+			default:
+				f=RESTFactory; break;
+		}
+
+		if ($scope.isNew) {
+
+			var orderReversed = $scope.$eval(scope.orderReversed);		//for booleans  
+			var sortFunction = xcUtils.getSortByFunction( scope.orderBy, orderReversed );
+
+			f.saveNew( $scope.selectedItem )
+			.then( function(res) {
+				
+				if (scope.type == 'categorised' || scope.type=='accordion') {
+
+					scope.groups = xcUtils.getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
+
+				} else {
+
+					scope.items.push(res);
+
+			        //resort
+			        var ress = scope.items;
+
+			        ress.sort( sortFunction );
+
+			        scope.items = ress;
+
+					//return first page of results
+					var b = [];
+					for (var i=0; i<scope.itemsPerPage && i<ress.length; i++) {
+						b.push( ress[i]);
+					}
+
+					scope.itemsPage = b;
+
+				}
+
+				$modalInstance.close();				
+
+			})
+			.catch( function(err) {
+				alert("The item could not be saved/ updated: " + err.statusText);
+			});
+
+
+		} else {
+
+			f.update( $scope.selectedItem)
+			.then( function(res) {
+
+				$scope.selectedItem = res;
+
+				$modalInstance.close();
+				$scope.isNew = false;
+
+				//$scope.$apply();
+
+			})
+			.catch( function(err) {
+				alert("The item could not be saved/ updated: " + err.statusText);
+			});
+		}
+
+	};
+
+  	//delete an item
+	$scope.deleteItem = function() {
+
+		var f = null;
+		switch( scope.datastoreType) {
+			case 'pouch':
+				f=PouchFactory; break;
+			case 'lowla':
+				f=LowlaFactory; break;
+			default:
+				f=RESTFactory; break;
+		}
+
+		f.delete( $scope.selectedItem )
+		.then( function(res) {
+
+			$scope.$emit('deleteItemEvent', $scope.selectedItem);
+
+			//clear the selected item
+			$scope.selectedItem = null;
+			$modalInstance.close();
+
+		})
+		.catch( function(err) {
+			console.error(err);
+		});
+		
+	};
+
+  $scope.cancelEdit = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+} ] );
+
+var app = angular.module('xcontrols');
+
 app.directive('xcForm', 
 	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
 	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
@@ -918,7 +1144,7 @@ app.directive('xcForm',
 		restrict : 'E',
 		templateUrl: 'xc-form.html',
 
-		controller : function($scope, $attrs, xcUtils) {
+		controller : function($scope, $attrs, $modal, xcUtils) {
 
 			//set defaults
 			configService.setEndpoint( $scope.url);
@@ -979,8 +1205,6 @@ app.directive('xcForm',
 						f.getById($scope.itemId)
 						.then( function(item) {
 
-							console.log('got', item);
-
 							$scope.selectedItem = item;
 
 							if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
@@ -1007,86 +1231,49 @@ app.directive('xcForm',
 				
 			}
 
-			$scope.clear = function(fld) {
-				/*clear a field*/
-				$scope.selectedItem[fld] = "";
+			$scope.editDetails = function() {
+				$scope.modalInstance = $modal.open({
+					templateUrl: 'xc-form-modal-edit.html',
+					controller: 'UpdateItemInstanceCtrl',
+					backdrop : true,
+					resolve: {
+						selectedItem : function () {
+							return $scope.selectedItem;
+						},
+						fieldsEdit : function() {
+							return $scope.fieldsEdit;
+						},
+						modelName : function() {
+							return $scope.modelName;
+						},
+						isNew : function() {
+							return $scope.isNew;
+						},
+						allowDelete : function() {
+							return $scope.allowDelete;
+						},
+						items : function() {
+							return null;
+						},
+						scope : function() {
+							return $scope;
+						}
+					}
+				});
 			};
 
+			//determine if we need to show an image, placeholder image or just an icon
 			$scope.showImage = function() {
 				return $scope.selectedItem && $scope.thumbnailField && $scope.selectedItem[$scope.thumbnailField];
-			}
+			};
 			$scope.showPlaceholder = function() {
 				return $scope.selectedItem && $scope.selectedItem && $scope.imagePlaceholderIcon && !$scope.selectedItem[$scope.thumbnailField];
-			}
+			};
 			$scope.showIcon = function() {
 				return $scope.selectedItem && $scope.iconField && $scope.selectedItem[$scope.iconField];
-			}
-
-			$scope.saveItem = function(form, modalId) {
-
-				if (!form.$valid) { alert('Please fill in all required fields'); return; }
-
-				xcUtils.calculateFormFields($scope.selectedItem);
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				f.update( $scope.selectedItem)
-				.then( function(res) {
-
-					$scope.selectedItem = res;
-
-					$(modalId).modal('hide');
-					$scope.isNew = false;
-
-					$scope.$apply();
-
-				})
-				.catch( function(err) {
-					alert("The item could not be updated: " + err.statusText);
-				});
-
 			};
 
-			$scope.deleteItem = function() {
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				//delete the item
-				f.delete( $scope.selectedItem)
-				.then( function(res) {
-
-					//console.log('deleted !', $scope.selectedItem);
-
-					$scope.$emit('deleteItemEvent', $scope.selectedItem);
-
-					//clear the selected item
-					$scope.selectedItem = null;
-
-				})
-				.catch( function(err) {
-					console.error(err);
-				})
-
-
-				
-			};
-
+			
 		},
 
 		link : function(scope, elem, attrs) {
@@ -1096,6 +1283,8 @@ app.directive('xcForm',
 	};
 
 }]);
+
+
 
 app.directive('animateOnChange', function($animate) {
 	return function(scope, elem, attr) {
@@ -1107,8 +1296,8 @@ app.directive('animateOnChange', function($animate) {
 					});
 				}
 			})  
-	}  
-})
+	}; 
+});
 
 
 var app = angular.module('xcontrols');
@@ -1227,68 +1416,8 @@ app.directive('xcImage', function() {
 var app = angular.module("xcontrols");
 
 app.directive('xcList', 
-	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
-	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
-
-	//function to sort an array of objects on a specific property and order
-	var sortBy = function(orderBy, orderReversed) {
-
-		return function(a,b) {
-			var _a = (a[orderBy] || '').toLowerCase();
-			var _b = (b[orderBy] || '').toLowerCase();
-			var modifier = (orderReversed ? -1 : 1);
-			if ( _a < _b )
-				return -1 * modifier;
-			if ( _a > _b )
-				return 1 * modifier;
-			return 0;
-		};
-
-	};
-
-	//group an array by a property of the objects in that array
-	//returns an array containing the grouped entries
-	var getGroups = function(entries, groupBy, orderBy, orderReversed) {
-
-		var groups = [];
-		var numEntries = entries.length;
-
-		//organise results per group
-		for (var i=0; i<numEntries; i++) {
-			var entry = entries[i];
-			var entryGroup = entry[groupBy];
-			if (!entryGroup) entryGroup="(none)";
-
-			var added = false;
-		   	for (var g in groups) {
-		     if (groups[g].name == entryGroup) {
-		        groups[g].entries.push( entry);
-		        added = true;
-		        break;
-		     }
-		   	}
-
-			if (!added) {
-				groups.push({"name": entryGroup, "collapsed" : true, "entries" : [entry] });
-			}
-		}
-
-	    //sort groups by group name
-    	groups.sort( function(a,b) {	
-			var _n1 = (a['name'] || '');
-			var _n2 = (b['name'] || '');
-
-			return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
-    	} );
-
-    	//now sort the entries in the group
-    	angular.forEach(groups, function(group) {
-    		group.entries.sort( sortBy( orderBy, orderReversed));
-    	});
-
-		return groups;
-
-	};
+	['$rootScope', '$filter', 'xcUtils', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, $filter, xcUtils, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	return {
 
@@ -1299,6 +1428,7 @@ app.directive('xcList',
 			listWidth : '=' ,
 			summaryField : '@',
 			detailsField : '@',
+			detailsFieldType : '@',
 			detailsFieldSubTop : '@',
 			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
@@ -1314,7 +1444,8 @@ app.directive('xcList',
 			imageField : '@',		/*image*/
 			iconField : '@',		/*icon*/ 
 			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
-			datastoreType : '@'
+			datastoreType : '@',
+			infiniteScroll : '@'
 
 		},
 
@@ -1362,7 +1493,7 @@ app.directive('xcList',
 					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
-						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
+						scope.groups = xcUtils.getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
 						scope.isLoading = false;
 						
 						//auto load first entry in the first group
@@ -1389,7 +1520,7 @@ app.directive('xcList',
 						}
 
 						//sort the results
-						res.sort( sortBy( scope.orderBy, orderReversed ) );
+						res.sort( xcUtils.getSortByFunction( scope.orderBy, orderReversed ) );
 
 			        	//return first page of results
 						var b = [];
@@ -1417,13 +1548,15 @@ app.directive('xcList',
 
 		},
 
-		controller: function($rootScope, $scope, xcUtils) {
+		controller: function($rootScope, $scope, $modal, $filter, xcUtils) {
 
 			$scope.hideList = false;
 
 			//set defaults
 			$scope.allowSearch = (typeof $scope.allowSearch == 'undefined' ? true : $scope.allowSearch);
 			$scope.autoloadFirst = (typeof $scope.autoloadFirst == 'undefined' ? false : $scope.autoloadFirst);
+			$scope.infiniteScroll = (typeof $scope.infiniteScroll == 'undefined' ? false : $scope.infiniteScroll);
+			$scope.detailsFieldType = (typeof $scope.detailsFieldType == 'undefined' ? 'text' : $scope.detailsFieldType);
 
 			$scope.isLoading = true;
       		$scope.hasMore = false;
@@ -1438,12 +1571,72 @@ app.directive('xcList',
 			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
 			$scope.imageBase = xcUtils.getConfig('imageBase');
 			
-			$scope.newItem = {};		//default object for new items
-
 			//custom list entries
 			if ($scope.srcData) {
 				$scope.srcDataEntries = xcUtils.getConfig( $scope.srcData);
 			}
+
+			$scope.addNewItem = function() {
+				$scope.modalInstance = $modal.open({
+					templateUrl: 'xc-form-modal-edit.html',
+					controller: 'UpdateItemInstanceCtrl',
+					backdrop : true,
+					resolve: {
+						selectedItem : function () {
+							return null;
+						},
+						fieldsEdit : function() {
+							return $scope.fieldsEdit;
+						},
+						modelName : function() {
+							return $scope.modelName;
+						},
+						isNew : function() {
+							return true;
+						},
+						allowDelete : function() {
+							return false;
+						},
+						items : function() {
+							return $scope.items;
+						},
+						scope : function() {
+							return $scope;
+						}
+					}
+				});
+			};
+
+			//bind events for infinite scroll
+			if ($scope.infiniteScroll) {
+
+				try {
+					pullUpEl = document.getElementById('pullUp');
+					pullUpOffset = pullUpEl.offsetHeight;
+				} catch (e) {
+				}
+
+				if ($rootScope.iOS || $rootScope.Android ) {
+					$('.bootcards-list').scroll(
+						function() {
+							if ($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+								$scope.flatViewScroll();
+							}
+						});
+				} else {
+					$(window).bind('scroll',
+						function() {
+							if ($(document).height() <= ($(window).height() + $(window).scrollTop() + 200)) {
+								$scope.flatViewScroll();
+							}
+						});
+				}
+
+			}
+
+			$scope.flatViewScroll = function() {
+				$("#btnLoadMore").click();
+			};
 
 			$scope.toggleCategory = function(expand) {
 				angular.forEach( $scope.groups, function(group) {
@@ -1510,87 +1703,39 @@ app.directive('xcList',
 
 			$rootScope.$on('deleteItemEvent', function(ev, item) {
 				$scope.delete(item);
-				
 			});
 
 		    //load more items
 		    $scope.loadMore = function() {
 
-		        $scope.isLoading = true;
-		        $scope.numPages++;
-
-		        var start = $scope.itemsPage.length;
+		    	var start = $scope.itemsPage.length;
 		        var end = Math.min(start + $scope.itemsPerPage, $scope.items.length);
-		        
-		        for ( var i=start; i<end; i++) {
-		          $scope.itemsPage.push( $scope.items[i]);
-		        }
+				
+				if (start < end) {
+				 
+			        $scope.isLoading = true;
+			        $scope.numPages++;
+			        
+			        for ( var i=start; i<end; i++) {
+			          $scope.itemsPage.push( $scope.items[i]);
+			        }
 
-		        $scope.isLoading = false;
-		        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
-
+			        $scope.isLoading = false;
+			        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
+			    }
 		    };
 
-			//save a new item
-			$scope.saveNewItem = function(form, modalId) {
+		    $scope.convert = function(item) {
+		    	
+		    	if ($scope.detailsFieldType == 'date') {
+		    		return $filter('date')(item[$scope.detailsField]);
+		    	} else {
+		    		return item[$scope.detailsField];
 		
-				if (!form.$valid) { alert('Please fill in all required fields'); return; }
+		    	}
 
-				xcUtils.calculateFormFields($scope.newItem);
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				f.saveNew( $scope.newItem )
-				.then( function(res) {
-
-					$(modalId).modal('hide');
-
-					var orderReversed = $scope.$eval($scope.orderReversed);		//for booleans
-			        var orderBy = $scope.orderBy;
-
-					if ($scope.type == 'categorised' || $scope.type=='accordion') {
-
-						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
-
-					} else {
-
-						$scope.items.push(res);
-
-				        //resort
-				        var ress = $scope.items;
-
-				        ress.sort( sortBy( $scope.orderBy, orderReversed ) );
-
-				        $scope.items = ress;
-
-						//return first page of results
-						var b = [];
-						for (var i=0; i<$scope.itemsPerPage && i<ress.length; i++) {
-							b.push( ress[i]);
-						}
-
-						$scope.itemsPage = b;
-
-					}				
-     
-
-				})
-				.catch( function(err) {
-					alert("The item could not be saved: " + err.statusText);
-				});
-	 
-				$scope.newItem = {};		//clear new item
-
-			};
-
+		  
+		    };
 
 		}
 
@@ -1842,7 +1987,7 @@ app.directive('xcUpload', function() {
 	};
 
 });
-angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-detailed.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
+angular.module('templates-main', ['xc-base.html', 'xc-chart.html', 'xc-file.html', 'xc-footer.html', 'xc-form-modal-edit.html', 'xc-form.html', 'xc-header.html', 'xc-image.html', 'xc-list-accordion.html', 'xc-list-categorised.html', 'xc-list-detailed.html', 'xc-list-flat.html', 'xc-list-heading.html', 'xc-reading.html', 'xc-summary-item.html', 'xc-summary.html', 'xc-upload.html']);
 
 angular.module("xc-base.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("xc-base.html",
@@ -1997,6 +2142,71 @@ angular.module("xc-footer.html", []).run(["$templateCache", function($templateCa
     "	</div>");
 }]);
 
+angular.module("xc-form-modal-edit.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("xc-form-modal-edit.html",
+    "<div>\n" +
+    "	<form class=\"form-horizontal\" name=\"cardForm\" role=\"form\">\n" +
+    "	<div class=\"modal-header\">\n" +
+    "\n" +
+    "		<div class=\"btn-group pull-left\">\n" +
+    "			<button class=\"btn btn-danger\" ng-click=\"cancelEdit()\" type=\"button\">\n" +
+    "				<i class=\"fa fa-times\"></i>Cancel\n" +
+    "			</button>\n" +
+    "		</div>\n" +
+    "\n" +
+    "		<div class=\"btn-group pull-right\">\n" +
+    "			<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveItem(cardForm)\">\n" +
+    "				<i class=\"fa fa-check\"></i>Save\n" +
+    "			</button>\n" +
+    "		</div>\n" +
+    "		<h4 class=\"modal-title\">Edit {{modelName}}</h4>		\n" +
+    "	</div>\n" +
+    "					\n" +
+    "	<div class=\"modal-body form-horizontal\">\n" +
+    "\n" +
+    "		<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardForm[field.field].$invalid }\">\n" +
+    "			<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'\">\n" +
+    "				<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "				<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clearField(field.field)\"></a>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
+    "				<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
+    "				<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"></textarea>\n" +
+    "				<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clearField(field.field)\"></a>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
+    "				<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\">\n" +
+    "					<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
+    "				</select>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
+    "				<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\" >\n" +
+    "					<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
+    "				</select>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
+    "				<xc-toggle ng-model=\"selectedItem[field.field]\"></xc-toggle>\n" +
+    "			</div>\n" +
+    "			\n" +
+    "		</div> \n" +
+    "\n" +
+    "	</div>\n" +
+    "\n" +
+    "	<div class=\"modal-footer\" ng-if=\"allowDelete && !isNew\">\n" +
+    "		<button type=\"button\" class=\"btn btn-danger btn-block\" ng-click=\"deleteItem()\">\n" +
+    "			<i class=\"fa fa-trash-o\"></i>\n" +
+    "			Delete {{modelName}}\n" +
+    "		</button>		\n" +
+    "	</div>\n" +
+    "\n" +
+    "	</form>\n" +
+    "\n" +
+    "</div>");
+}]);
+
 angular.module("xc-form.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("xc-form.html",
     "<div>\n" +
@@ -2015,7 +2225,7 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "		<div class=\"panel-heading clearfix\">\n" +
     "			<h3 class=\"panel-title pull-left\">{{modelName}}</h3>\n" +
-    "			<a class=\"btn btn-primary pull-right\" data-toggle=\"modal\" data-target=\"#editModal\">\n" +
+    "			<a class=\"btn btn-primary pull-right\" ng-click=\"editDetails()\">\n" +
     "				<i class=\"fa fa-pencil\"></i><span>Edit</span>\n" +
     "			</a>\n" +
     "\n" +
@@ -2075,73 +2285,6 @@ angular.module("xc-form.html", []).run(["$templateCache", function($templateCach
     "		</div>\n" +
     "\n" +
     "	</div>\n" +
-    "\n" +
-    "	<!--modal to edit details-->\n" +
-    "	<form class=\"form-horizontal\" name=\"cardForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"editModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"editModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							<i class=\"fa fa-times\"></i>Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveItem(cardForm, '#editModal')\">\n" +
-    "							<i class=\"fa fa-check\"></i>Save\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Edit {{modelName}}</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardForm[field.field].$invalid }\">\n" +
-    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'\">\n" +
-    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
-    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
-    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\" />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
-    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\">\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
-    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\" >\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
-    "							<xc-toggle ng-model=\"selectedItem[field.field]\"></xc-toggle>\n" +
-    "						</div>\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "				<div class=\"modal-footer\" ng-if=\"allowDelete && !isNew\">\n" +
-    "					<button type=\"button\" class=\"btn btn-danger btn-block\" ng-click=\"deleteItem()\" data-dismiss=\"modal\">\n" +
-    "						<i class=\"fa fa-trash-o\"></i>\n" +
-    "						Delete {{modelName}}\n" +
-    "					</button>		\n" +
-    "				</div>\n" +
-    "\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "	</form>\n" +
     "\n" +
     "</div>");
 }]);
@@ -2352,19 +2495,20 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "\n" +
     "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
-    "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
+    "						<p class=\"list-group-item-text\">{{ convert(item) }}&nbsp;</p>\n" +
     "						\n" +
     "					</a>\n" +
     "\n" +
-    "					\n" +
     "				</div>\n" +
     "\n" +
     "				<div class=\"list-group-item\" ng-show=\"isLoading\">\n" +
     "					<i class=\"fa fa-spinner fa-spin fa-fw\" style=\"margin-right:0; opacity: 1;\"></i>Loading...\n" +
     "				</div>\n" +
     "\n" +
-    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\" ng-click=\"loadMore()\">\n" +
-    "					Load more...\n" +
+    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\">\n" +
+    "					<button ng-click=\"loadMore()\" id=\"btnLoadMore\" class=\"btn btn-default\">\n" +
+    "						Load more...\n" +
+    "					</button>\n" +
     "				</div>\n" +
     "\n" +
     "			</div>\n" +
@@ -2380,65 +2524,6 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "	</div>\n" +
     "\n" +
     " </div>\n" +
-    "\n" +
-    "<!--modal to add details-->\n" +
-    "<form class=\"form-horizontal\" name=\"cardNewForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"addModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"addModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
-    "							Save\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Add {{modelName}}</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardNewForm[field.field].$invalid }\">\n" +
-    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
-    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
-    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
-    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
-    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\">\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
-    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" >\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
-    "							<xc-toggle ng-model=\"newItem[field.field]\"></xc-toggle>\n" +
-    "						</div>\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "</form>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2479,7 +2564,7 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "\n" +
     "						<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
-    "						<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
+    "						<p class=\"list-group-item-text\">{{ convert(item) }}&nbsp;</p>\n" +
     "						\n" +
     "					</a>\n" +
     "\n" +
@@ -2489,8 +2574,10 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "					<i class=\"fa fa-spinner fa-spin fa-fw\" style=\"margin-right:0; opacity: 1;\"></i>Loading...\n" +
     "				</div>\n" +
     "\n" +
-    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\" ng-click=\"loadMore()\">\n" +
-    "					Load more...\n" +
+    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\">\n" +
+    "					<button ng-click=\"loadMore()\" id=\"btnLoadMore\" class=\"btn btn-default\">\n" +
+    "						Load more...\n" +
+    "					</button>\n" +
     "				</div>\n" +
     "\n" +
     "			</div>\n" +
@@ -2506,65 +2593,6 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "	</div>\n" +
     "\n" +
     " </div>\n" +
-    "\n" +
-    "<!--modal to add details-->\n" +
-    "<form class=\"form-horizontal\" name=\"cardNewForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"addModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"addModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
-    "							Save\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Add {{modelName}}</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardNewForm[field.field].$invalid }\">\n" +
-    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
-    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
-    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
-    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
-    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\">\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
-    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" >\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
-    "							<xc-toggle ng-model=\"newItem[field.field]\"></xc-toggle>\n" +
-    "						</div>\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "</form>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2604,7 +2632,7 @@ angular.module("xc-list-detailed.html", []).run(["$templateCache", function($tem
     "\n" +
     "							<h4 class=\"list-group-item-heading\">{{item[summaryField]}}</h4>\n" +
     "\n" +
-    "							<p class=\"list-group-item-text\">{{item[detailsField]}}</p>\n" +
+    "							<p class=\"list-group-item-text\">{{ convert(item) }}&nbsp;</p>\n" +
     "\n" +
     "						</div>\n" +
     "						<div class=\"col-sm-6\">\n" +
@@ -2621,8 +2649,10 @@ angular.module("xc-list-detailed.html", []).run(["$templateCache", function($tem
     "					<i class=\"fa fa-spinner fa-spin fa-fw\" style=\"margin-right:0; opacity: 1;\"></i>Loading...\n" +
     "				</div>\n" +
     "\n" +
-    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\" ng-click=\"loadMore()\">\n" +
-    "					Load more...\n" +
+    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\">\n" +
+    "					<button ng-click=\"loadMore()\" id=\"btnLoadMore\" class=\"btn btn-default\">\n" +
+    "						Load more...\n" +
+    "					</button>\n" +
     "				</div>\n" +
     "\n" +
     "			</div>\n" +
@@ -2638,67 +2668,6 @@ angular.module("xc-list-detailed.html", []).run(["$templateCache", function($tem
     "	</div>\n" +
     "\n" +
     " </div>\n" +
-    "\n" +
-    "<!--modal to add details-->\n" +
-    "<form class=\"form-horizontal\" name=\"cardNewForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"addModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"addModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							<i class=\"fa fa-times\"></i>\n" +
-    "							Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
-    "							<i class=\"fa fa-check\"></i>\n" +
-    "							Save\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Add {{modelName}}</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardNewForm[field.field].$invalid }\">\n" +
-    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
-    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
-    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
-    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
-    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\">\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
-    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" >\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
-    "							<xc-toggle ng-model=\"newItem[field.field]\"></xc-toggle>\n" +
-    "						</div>\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "</form>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2734,7 +2703,7 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "\n" +
     "					<h4 class=\"list-group-item-heading\">{{item[summaryField]}}&nbsp;</h4>\n" +
     "\n" +
-    "					<p class=\"list-group-item-text\">{{item[detailsField]}}&nbsp;</p>\n" +
+    "					<p class=\"list-group-item-text\">{{ convert(item) }}&nbsp;</p>\n" +
     "					\n" +
     "				</a>\n" +
     "\n" +
@@ -2742,8 +2711,10 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "					<i class=\"fa fa-spinner fa-spin fa-fw\" style=\"margin-right:0; opacity: 1;\"></i>Loading...\n" +
     "				</div>\n" +
     "\n" +
-    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\" ng-click=\"loadMore()\">\n" +
-    "					Load more...\n" +
+    "				<div class=\"list-group-item\" ng-show=\"!isLoading && hasMore\">\n" +
+    "					<button ng-click=\"loadMore()\" id=\"btnLoadMore\" class=\"btn btn-default\">\n" +
+    "						Load more...\n" +
+    "					</button>\n" +
     "				</div>\n" +
     "\n" +
     "			</div>\n" +
@@ -2759,67 +2730,6 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "	</div>\n" +
     "\n" +
     " </div>\n" +
-    "\n" +
-    "<!--modal to add details-->\n" +
-    "<form class=\"form-horizontal\" name=\"cardNewForm\" role=\"form\">\n" +
-    "	<div class=\"modal fade\" id=\"addModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"addModal\" aria-hidden=\"true\">\n" +
-    "		<div class=\"modal-dialog\">\n" +
-    "			<div class=\"modal-content\">\n" +
-    "			\n" +
-    "				<div class=\"modal-header\">\n" +
-    "\n" +
-    "					<div class=\"btn-group pull-left\">\n" +
-    "						<button class=\"btn btn-danger\" data-dismiss=\"modal\" type=\"button\">\n" +
-    "							<i class=\"fa fa-times\"></i>\n" +
-    "							Cancel\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "				\n" +
-    "					<div class=\"btn-group pull-right\">\n" +
-    "						<button class=\"btn btn-success\" type=\"button\" ng-click=\"saveNewItem(cardNewForm, '#addModal')\">\n" +
-    "							<i class=\"fa fa-check\"></i>\n" +
-    "							Save\n" +
-    "						</button>\n" +
-    "					</div>\n" +
-    "					<h4 class=\"modal-title\">Add {{modelName}}</h4>		\n" +
-    "				</div>\n" +
-    "				\n" +
-    "				<div class=\"modal-body\">\n" +
-    "\n" +
-    "					<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardNewForm[field.field].$invalid }\">\n" +
-    "						<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone'\">\n" +
-    "							<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
-    "							<input class=\"form-control\" type=\"date\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\"  />\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='multiline'\">\n" +
-    "							<textarea class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" />\n" +
-    "							<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clear(field.field)\"></a>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select'\">\n" +
-    "							<select class=\"form-control\" name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\">\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='select-multiple'\">\n" +
-    "							<select class=\"form-control\" multiple name=\"{{field.field}}\" ng-model=\"newItem[field.field]\" ng-required=\"field.required\" >\n" +
-    "								<option ng-repeat=\"o in field.options\" value=\"{{o}}\">{{o}}</option>\n" +
-    "							</select>\n" +
-    "						</div>\n" +
-    "						<div class=\"col-xs-9\" ng-if=\"field.type=='toggle'\">	\n" +
-    "							<xc-toggle ng-model=\"newItem[field.field]\"></xc-toggle>\n" +
-    "						</div>\n" +
-    "					</div>\n" +
-    "\n" +
-    "				</div>\n" +
-    "\n" +
-    "			</div>\n" +
-    "		</div>\n" +
-    "	</div>	\n" +
-    "</form>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2840,7 +2750,7 @@ angular.module("xc-list-heading.html", []).run(["$templateCache", function($temp
     "\n" +
     "			<div class=\"col-xs-4\" ng-if=\"allowAdd\">\n" +
     "\n" +
-    "				<a class=\"btn btn-primary btn-block\" href=\"#\" data-toggle=\"modal\" data-target=\"#addModal\">\n" +
+    "				<a class=\"btn btn-primary btn-block\" href=\"#\" ng-click=\"addNewItem()\">\n" +
     "					<i class=\"fa fa-plus\"></i> \n" +
     "					<span>Add</span>\n" +
     "				</a>\n" +

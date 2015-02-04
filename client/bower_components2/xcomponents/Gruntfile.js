@@ -15,7 +15,7 @@ module.exports = function(grunt) {
 
     },
 
-    /*contact all js source files*/
+    /*concat xc js source files*/
     concat: {
       js1 : {
         options: { banner: '<%= banner %>' },
@@ -32,7 +32,21 @@ module.exports = function(grunt) {
           'dist/templates.js'
         ],
         dest: 'dist/xcomponents.js'
-      } 
+      },
+      'js-libs' : {
+        src : [
+          '../../bower_components/angular/angular.min.js',
+          '../../bower_components/angular-resource/angular-resource.min.js',
+          '../../bower_components/angular-animate/angular-animate.min.js',
+          '../../bower_components/angular-sanitize/angular-sanitize.min.js',
+          '../../bower_components/angular-bootstrap/ui-bootstrap.min.js',
+          '../../bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js'
+
+        ],
+        dest : 'dist/libs-angular.js'
+
+
+      }
 
     },
 
@@ -79,6 +93,7 @@ module.exports = function(grunt) {
     'html2js',
     'concat:js1',
     'concat:js2',
+    'concat:js-libs',
     'clean:tmp',
    ]);
 

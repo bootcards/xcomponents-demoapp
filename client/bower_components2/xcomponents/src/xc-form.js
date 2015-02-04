@@ -25,7 +25,7 @@ app.directive('xcForm',
 		restrict : 'E',
 		templateUrl: 'xc-form.html',
 
-		controller : function($scope, $attrs, xcUtils) {
+		controller : function($scope, $attrs, $modal, xcUtils) {
 
 			//set defaults
 			configService.setEndpoint( $scope.url);
@@ -86,8 +86,6 @@ app.directive('xcForm',
 						f.getById($scope.itemId)
 						.then( function(item) {
 
-							console.log('got', item);
-
 							$scope.selectedItem = item;
 
 							if ( $scope.thumbnailField != null && $scope.thumbnailField.length > 0) {
@@ -114,86 +112,49 @@ app.directive('xcForm',
 				
 			}
 
-			$scope.clear = function(fld) {
-				/*clear a field*/
-				$scope.selectedItem[fld] = "";
+			$scope.editDetails = function() {
+				$scope.modalInstance = $modal.open({
+					templateUrl: 'xc-form-modal-edit.html',
+					controller: 'UpdateItemInstanceCtrl',
+					backdrop : true,
+					resolve: {
+						selectedItem : function () {
+							return $scope.selectedItem;
+						},
+						fieldsEdit : function() {
+							return $scope.fieldsEdit;
+						},
+						modelName : function() {
+							return $scope.modelName;
+						},
+						isNew : function() {
+							return $scope.isNew;
+						},
+						allowDelete : function() {
+							return $scope.allowDelete;
+						},
+						items : function() {
+							return null;
+						},
+						scope : function() {
+							return $scope;
+						}
+					}
+				});
 			};
 
+			//determine if we need to show an image, placeholder image or just an icon
 			$scope.showImage = function() {
 				return $scope.selectedItem && $scope.thumbnailField && $scope.selectedItem[$scope.thumbnailField];
-			}
+			};
 			$scope.showPlaceholder = function() {
 				return $scope.selectedItem && $scope.selectedItem && $scope.imagePlaceholderIcon && !$scope.selectedItem[$scope.thumbnailField];
-			}
+			};
 			$scope.showIcon = function() {
 				return $scope.selectedItem && $scope.iconField && $scope.selectedItem[$scope.iconField];
-			}
-
-			$scope.saveItem = function(form, modalId) {
-
-				if (!form.$valid) { alert('Please fill in all required fields'); return; }
-
-				xcUtils.calculateFormFields($scope.selectedItem);
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				f.update( $scope.selectedItem)
-				.then( function(res) {
-
-					$scope.selectedItem = res;
-
-					$(modalId).modal('hide');
-					$scope.isNew = false;
-
-					$scope.$apply();
-
-				})
-				.catch( function(err) {
-					alert("The item could not be updated: " + err.statusText);
-				});
-
 			};
 
-			$scope.deleteItem = function() {
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				//delete the item
-				f.delete( $scope.selectedItem)
-				.then( function(res) {
-
-					//console.log('deleted !', $scope.selectedItem);
-
-					$scope.$emit('deleteItemEvent', $scope.selectedItem);
-
-					//clear the selected item
-					$scope.selectedItem = null;
-
-				})
-				.catch( function(err) {
-					console.error(err);
-				})
-
-
-				
-			};
-
+			
 		},
 
 		link : function(scope, elem, attrs) {
@@ -203,6 +164,8 @@ app.directive('xcForm',
 	};
 
 }]);
+
+
 
 app.directive('animateOnChange', function($animate) {
 	return function(scope, elem, attr) {
@@ -214,5 +177,5 @@ app.directive('animateOnChange', function($animate) {
 					});
 				}
 			})  
-	}  
-})
+	}; 
+});

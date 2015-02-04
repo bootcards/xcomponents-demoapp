@@ -1,68 +1,8 @@
 var app = angular.module("xcontrols");
 
 app.directive('xcList', 
-	['$rootScope', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
-	function($rootScope, RESTFactory, PouchFactory, LowlaFactory, configService) {
-
-	//function to sort an array of objects on a specific property and order
-	var sortBy = function(orderBy, orderReversed) {
-
-		return function(a,b) {
-			var _a = (a[orderBy] || '').toLowerCase();
-			var _b = (b[orderBy] || '').toLowerCase();
-			var modifier = (orderReversed ? -1 : 1);
-			if ( _a < _b )
-				return -1 * modifier;
-			if ( _a > _b )
-				return 1 * modifier;
-			return 0;
-		};
-
-	};
-
-	//group an array by a property of the objects in that array
-	//returns an array containing the grouped entries
-	var getGroups = function(entries, groupBy, orderBy, orderReversed) {
-
-		var groups = [];
-		var numEntries = entries.length;
-
-		//organise results per group
-		for (var i=0; i<numEntries; i++) {
-			var entry = entries[i];
-			var entryGroup = entry[groupBy];
-			if (!entryGroup) entryGroup="(none)";
-
-			var added = false;
-		   	for (var g in groups) {
-		     if (groups[g].name == entryGroup) {
-		        groups[g].entries.push( entry);
-		        added = true;
-		        break;
-		     }
-		   	}
-
-			if (!added) {
-				groups.push({"name": entryGroup, "collapsed" : true, "entries" : [entry] });
-			}
-		}
-
-	    //sort groups by group name
-    	groups.sort( function(a,b) {	
-			var _n1 = (a['name'] || '');
-			var _n2 = (b['name'] || '');
-
-			return ( _n1 < _n2 ? -1 : (_n1>_n2 ? 1 : 0));
-    	} );
-
-    	//now sort the entries in the group
-    	angular.forEach(groups, function(group) {
-    		group.entries.sort( sortBy( orderBy, orderReversed));
-    	});
-
-		return groups;
-
-	};
+	['$rootScope', '$filter', 'xcUtils', 'RESTFactory', 'PouchFactory', 'LowlaFactory', 'configService', 
+	function($rootScope, $filter, xcUtils, RESTFactory, PouchFactory, LowlaFactory, configService) {
 
 	return {
 
@@ -73,6 +13,7 @@ app.directive('xcList',
 			listWidth : '=' ,
 			summaryField : '@',
 			detailsField : '@',
+			detailsFieldType : '@',
 			detailsFieldSubTop : '@',
 			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
@@ -88,7 +29,8 @@ app.directive('xcList',
 			imageField : '@',		/*image*/
 			iconField : '@',		/*icon*/ 
 			imagePlaceholderIcon : '@',		/*icon to be used if no thumbnail could be found, see http://fortawesome.github.io/Font-Awesome/icons/ */
-			datastoreType : '@'
+			datastoreType : '@',
+			infiniteScroll : '@'
 
 		},
 
@@ -136,7 +78,7 @@ app.directive('xcList',
 					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
-						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
+						scope.groups = xcUtils.getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
 						scope.isLoading = false;
 						
 						//auto load first entry in the first group
@@ -163,7 +105,7 @@ app.directive('xcList',
 						}
 
 						//sort the results
-						res.sort( sortBy( scope.orderBy, orderReversed ) );
+						res.sort( xcUtils.getSortByFunction( scope.orderBy, orderReversed ) );
 
 			        	//return first page of results
 						var b = [];
@@ -191,13 +133,15 @@ app.directive('xcList',
 
 		},
 
-		controller: function($rootScope, $scope, xcUtils) {
+		controller: function($rootScope, $scope, $modal, $filter, xcUtils) {
 
 			$scope.hideList = false;
 
 			//set defaults
 			$scope.allowSearch = (typeof $scope.allowSearch == 'undefined' ? true : $scope.allowSearch);
 			$scope.autoloadFirst = (typeof $scope.autoloadFirst == 'undefined' ? false : $scope.autoloadFirst);
+			$scope.infiniteScroll = (typeof $scope.infiniteScroll == 'undefined' ? false : $scope.infiniteScroll);
+			$scope.detailsFieldType = (typeof $scope.detailsFieldType == 'undefined' ? 'text' : $scope.detailsFieldType);
 
 			$scope.isLoading = true;
       		$scope.hasMore = false;
@@ -212,12 +156,72 @@ app.directive('xcList',
 			$scope.fieldsEdit = xcUtils.getConfig('fieldsEdit');
 			$scope.imageBase = xcUtils.getConfig('imageBase');
 			
-			$scope.newItem = {};		//default object for new items
-
 			//custom list entries
 			if ($scope.srcData) {
 				$scope.srcDataEntries = xcUtils.getConfig( $scope.srcData);
 			}
+
+			$scope.addNewItem = function() {
+				$scope.modalInstance = $modal.open({
+					templateUrl: 'xc-form-modal-edit.html',
+					controller: 'UpdateItemInstanceCtrl',
+					backdrop : true,
+					resolve: {
+						selectedItem : function () {
+							return null;
+						},
+						fieldsEdit : function() {
+							return $scope.fieldsEdit;
+						},
+						modelName : function() {
+							return $scope.modelName;
+						},
+						isNew : function() {
+							return true;
+						},
+						allowDelete : function() {
+							return false;
+						},
+						items : function() {
+							return $scope.items;
+						},
+						scope : function() {
+							return $scope;
+						}
+					}
+				});
+			};
+
+			//bind events for infinite scroll
+			if ($scope.infiniteScroll) {
+
+				try {
+					pullUpEl = document.getElementById('pullUp');
+					pullUpOffset = pullUpEl.offsetHeight;
+				} catch (e) {
+				}
+
+				if ($rootScope.iOS || $rootScope.Android ) {
+					$('.bootcards-list').scroll(
+						function() {
+							if ($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+								$scope.flatViewScroll();
+							}
+						});
+				} else {
+					$(window).bind('scroll',
+						function() {
+							if ($(document).height() <= ($(window).height() + $(window).scrollTop() + 200)) {
+								$scope.flatViewScroll();
+							}
+						});
+				}
+
+			}
+
+			$scope.flatViewScroll = function() {
+				$("#btnLoadMore").click();
+			};
 
 			$scope.toggleCategory = function(expand) {
 				angular.forEach( $scope.groups, function(group) {
@@ -284,87 +288,39 @@ app.directive('xcList',
 
 			$rootScope.$on('deleteItemEvent', function(ev, item) {
 				$scope.delete(item);
-				
 			});
 
 		    //load more items
 		    $scope.loadMore = function() {
 
-		        $scope.isLoading = true;
-		        $scope.numPages++;
-
-		        var start = $scope.itemsPage.length;
+		    	var start = $scope.itemsPage.length;
 		        var end = Math.min(start + $scope.itemsPerPage, $scope.items.length);
-		        
-		        for ( var i=start; i<end; i++) {
-		          $scope.itemsPage.push( $scope.items[i]);
-		        }
+				
+				if (start < end) {
+				 
+			        $scope.isLoading = true;
+			        $scope.numPages++;
+			        
+			        for ( var i=start; i<end; i++) {
+			          $scope.itemsPage.push( $scope.items[i]);
+			        }
 
-		        $scope.isLoading = false;
-		        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
-
+			        $scope.isLoading = false;
+			        $scope.hasMore = $scope.itemsPage.length < $scope.totalNumItems;
+			    }
 		    };
 
-			//save a new item
-			$scope.saveNewItem = function(form, modalId) {
+		    $scope.convert = function(item) {
+		    	
+		    	if ($scope.detailsFieldType == 'date') {
+		    		return $filter('date')(item[$scope.detailsField]);
+		    	} else {
+		    		return item[$scope.detailsField];
 		
-				if (!form.$valid) { alert('Please fill in all required fields'); return; }
+		    	}
 
-				xcUtils.calculateFormFields($scope.newItem);
-
-				var f = null;
-				switch( $scope.datastoreType) {
-					case 'pouch':
-						f=PouchFactory; break;
-					case 'lowla':
-						f=LowlaFactory; break;
-					default:
-						f=RESTFactory; break;
-				}
-
-				f.saveNew( $scope.newItem )
-				.then( function(res) {
-
-					$(modalId).modal('hide');
-
-					var orderReversed = $scope.$eval($scope.orderReversed);		//for booleans
-			        var orderBy = $scope.orderBy;
-
-					if ($scope.type == 'categorised' || $scope.type=='accordion') {
-
-						scope.groups = getGroups( res, scope.groupBy, scope.orderBy, orderReversed );
-
-					} else {
-
-						$scope.items.push(res);
-
-				        //resort
-				        var ress = $scope.items;
-
-				        ress.sort( sortBy( $scope.orderBy, orderReversed ) );
-
-				        $scope.items = ress;
-
-						//return first page of results
-						var b = [];
-						for (var i=0; i<$scope.itemsPerPage && i<ress.length; i++) {
-							b.push( ress[i]);
-						}
-
-						$scope.itemsPage = b;
-
-					}				
-     
-
-				})
-				.catch( function(err) {
-					alert("The item could not be saved: " + err.statusText);
-				});
-	 
-				$scope.newItem = {};		//clear new item
-
-			};
-
+		  
+		    };
 
 		}
 

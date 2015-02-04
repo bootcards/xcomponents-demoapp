@@ -15,9 +15,17 @@ var app = angular.module('xcontrols', [
 ]);
 
 //bootstrapping code
-angular.element(document).ready(function() {
- angular.bootstrap(document, ['xcontrols']);
-});
+var hasNativeHTMLImportsSupport = ('import' in document.createElement('link'));
+
+if (hasNativeHTMLImportsSupport) {
+	angular.element(document).ready(function() {
+	 angular.bootstrap(document, ['xcontrols']);
+	});
+} else {
+	window.addEventListener('HTMLImportsLoaded', function(e){ 
+		angular.bootstrap(document, ['xcontrols']);
+	});
+}
 
 app.controller('xcController', function($rootScope, $scope, $timeout, $document, xcUtils) {
 	

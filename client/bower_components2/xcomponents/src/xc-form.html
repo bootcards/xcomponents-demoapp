@@ -15,7 +15,7 @@
 
 		<div class="panel-heading clearfix">
 			<h3 class="panel-title pull-left">{{modelName}}</h3>
-			<a class="btn btn-primary pull-right" data-toggle="modal" data-target="#editModal">
+			<a class="btn btn-primary pull-right" ng-click="editDetails()">
 				<i class="fa fa-pencil"></i><span>Edit</span>
 			</a>
 
@@ -75,72 +75,5 @@
 		</div>
 
 	</div>
-
-	<!--modal to edit details-->
-	<form class="form-horizontal" name="cardForm" role="form">
-	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-			
-				<div class="modal-header">
-
-					<div class="btn-group pull-left">
-						<button class="btn btn-danger" data-dismiss="modal" type="button">
-							<i class="fa fa-times"></i>Cancel
-						</button>
-					</div>
-				
-					<div class="btn-group pull-right">
-						<button class="btn btn-success" type="button" ng-click="saveItem(cardForm, '#editModal')">
-							<i class="fa fa-check"></i>Save
-						</button>
-					</div>
-					<h4 class="modal-title">Edit {{modelName}}</h4>		
-				</div>
-				
-				<div class="modal-body">
-
-					<div class="form-group" ng-repeat="field in fieldsEdit" ng-class="{ 'has-error': cardForm[field.field].$invalid }">
-						<label class="col-xs-3 control-label">{{field.label}}</label>
-						<div class="col-xs-9" ng-if="field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'">
-							<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
-							<a class="fa fa-times-circle fa-lg clearer"></a>
-						</div>
-						<div class="col-xs-9" ng-if="field.type=='date'">
-							<input class="form-control" type="date" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
-						</div>
-						<div class="col-xs-9" ng-if="field.type=='multiline'">
-							<textarea class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required" />
-							<a class="fa fa-times-circle fa-lg clearer" ng-click="clear(field.field)"></a>
-						</div>
-						<div class="col-xs-9" ng-if="field.type=='select'">
-							<select class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required">
-								<option ng-repeat="o in field.options" value="{{o}}">{{o}}</option>
-							</select>
-						</div>
-						<div class="col-xs-9" ng-if="field.type=='select-multiple'">
-							<select class="form-control" multiple name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required" >
-								<option ng-repeat="o in field.options" value="{{o}}">{{o}}</option>
-							</select>
-						</div>
-						<div class="col-xs-9" ng-if="field.type=='toggle'">	
-							<xc-toggle ng-model="selectedItem[field.field]"></xc-toggle>
-						</div>
-					</div>
-
-				</div>
-
-				<div class="modal-footer" ng-if="allowDelete && !isNew">
-					<button type="button" class="btn btn-danger btn-block" ng-click="deleteItem()" data-dismiss="modal">
-						<i class="fa fa-trash-o"></i>
-						Delete {{modelName}}
-					</button>		
-				</div>
-
-
-			</div>
-		</div>
-	</div>	
-	</form>
 
 </div>

@@ -11,32 +11,36 @@ xcontrols.charts['closed-sales'] = [
   {label: 'Simon Sweet', value: 5250 }
 ];
 
-var app = angular.module('xcontrols');
+window.addEventListener('HTMLImportsLoaded', function(e){
 
-//extend controller
-app.controller('xcCustomersCtrl', function($scope, $controller, RESTFactory, configService) {
+  var app = angular.module('xcontrols');
 
-	$controller('xcController', { $scope: $scope });
+  //extend controller
+  app.controller('xcCustomersCtrl', function($scope, $controller, RESTFactory, configService) {
 
-    $scope.numContacts = 0;
-    $scope.numCompanies = 0;
-    $scope.numNotes = 0;
+  	$controller('xcController', { $scope: $scope });
 
-	configService.setEndpoint( "/api/Contacts/:id" );
-    RESTFactory.info().then( function(res) {
-    	$scope.numContacts = res.count;
-    });
+      $scope.numContacts = 0;
+      $scope.numCompanies = 0;
+      $scope.numNotes = 0;
 
-    configService.setEndpoint( "/api/Companies/:id" );
-    RESTFactory.info().then( function(res) {
-    	$scope.numCompanies = res.count;
-    });
+  	configService.setEndpoint( "/api/Contacts/:id" );
+      RESTFactory.info().then( function(res) {
+      	$scope.numContacts = res.count;
+      });
 
-    configService.setEndpoint( "/api/Notes/:id" );
-    RESTFactory.info().then( function(res) {
-    	$scope.numNotes = res.count;
-    });
+      configService.setEndpoint( "/api/Companies/:id" );
+      RESTFactory.info().then( function(res) {
+      	$scope.numCompanies = res.count;
+      });
 
+      configService.setEndpoint( "/api/Notes/:id" );
+      RESTFactory.info().then( function(res) {
+      	$scope.numNotes = res.count;
+      });
+
+  
+  });
 
 });
 

@@ -4,11 +4,19 @@
 <head>
 	<title>XControls</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!--set the hidden class here, so everything is immediately hidden-->
+	<style type="text/css">
+		.hidden {
+			display:none;
+		}
+	</style>
 	
-	<!-- polyfill for html imports -->
+	<!-- polyfill for html imports + xcomponents imports -->
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
 	<link rel="import" href="/bower_components2/xcomponents/includes.html"></script>
  
+ 	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
 	<script src="contacts.js"></script>
 	
@@ -30,7 +38,8 @@
 		image-field="thumbnailUrl"
 		image-placeholder-icon="user"
 		autoload-first="true"
-		type="flat">
+		type="flat"
+		infinite-scroll="true">
 
 		<xc-form 
 			url="/api/Contacts/:id" 
