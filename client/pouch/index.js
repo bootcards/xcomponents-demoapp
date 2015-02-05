@@ -11,50 +11,53 @@ xcontrols.charts['closed-sales'] = [
   {label: 'Simon Sweet', value: 5250 }
 ];
 
-var app = angular.module('xcontrols');
+window.addEventListener('HTMLImportsLoaded', function(e){
+  var app = angular.module('xcontrols');
 
-//extend controller
-app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB, PouchFactory, configService) {
+  //extend controller
+  app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB, PouchFactory, configService) {
 
-	$controller('xcController', { $scope: $scope } );
+  	$controller('xcController', { $scope: $scope } );
 
-    $scope.numContacts = 0;
+      $scope.numContacts = 0;
 
-    configService.setEndpoint( "example" );
+      configService.setEndpoint( "example" );
 
-    //get number of contacts in the local pouchdb
-    PouchFactory.info().then( function(res) {
-      $scope.numContacts = res.count;
-    });
+      //get number of contacts in the local pouchdb
+      PouchFactory.info().then( function(res) {
+        $scope.numContacts = res.count;
+      });
 
-    $scope.loadData = function() {
+      $scope.loadData = function() {
 
-      //load data from (mongo) REST API to fill local pouch db
-  		var db = pouchDB('example');
+        //load data from (mongo) REST API to fill local pouch db
+    		var db = pouchDB('example');
 
-  		$http.get('/api/Contacts').then( function( data ) {
+    		$http.get('/api/Contacts').then( function( data ) {
 
-        PouchFactory.insert( data.data).then( function(res) {
-          PouchFactory.info().then( function(res) {
-            $scope.numContacts = res.count;
+          PouchFactory.insert( data.data).then( function(res) {
+            PouchFactory.info().then( function(res) {
+              $scope.numContacts = res.count;
+            });
           });
-        });
-  		 
-  		});
+    		 
+    		});
 
-    };
+      };
 
-    $scope.clearData = function() {
+      $scope.clearData = function() {
 
-    	var db = pouchDB('example');
-    	db.destroy().then( function(res) {
-    	
-    		if (res.ok) {
-    			$scope.numContacts = 0;
-    		}
+      	var db = pouchDB('example');
+      	db.destroy().then( function(res) {
+      	
+      		if (res.ok) {
+      			$scope.numContacts = 0;
+      		}
 
-    	});
-    };
+      	});
+      };
+
+  }); 
 
 });
 
