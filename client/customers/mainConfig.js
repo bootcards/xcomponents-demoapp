@@ -13,6 +13,11 @@ var xcontrols = {
 		{ label : 'Charts', url : 'charts.html', icon : 'fa-bar-chart-o' },
 		{ label : 'Settings', url : 'settings.html', icon : 'fa-gears' },
 
+	],
+
+	footerOptions : [
+		{ label : 'Dashboard', url : '/index.html', icon : 'fa-dashboard'},
+		{ label : 'Contacts', url : 'contacts.html', icon : 'fa-users' }
 	]
 
 };

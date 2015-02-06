@@ -17,9 +17,10 @@ var xcontrols = {
 		{ label : 'Dashboard', url : 'index.html', icon : 'fa-dashboard' },
 		{ label : 'Lists', url : 'lists.html', icon : 'fa-list',
 			menuOptions : [
+				{ label : 'Flat', url : 'contacts-flat.html', icon : 'fa-list-alt' },
+				{ label : 'Detailed', url : 'contacts-detailed.html', icon : 'fa-list-alt' },
 				{ label : 'Accordion', url : 'contacts-accordion.html', icon : 'fa-th-list' },
 				{ label : 'Categorized', url : 'contacts-categorized.html', icon : 'fa-list' },
-				{ label : 'Flat', url : 'contacts-flat.html', icon : 'fa-list-list' }
 			]
 		},
 		{ label : 'Cards', url : 'cards.html', icon : 'fa-book' },
@@ -39,6 +40,12 @@ var xcontrols = {
 			]
 		},
 		{ label : 'Settings', url : 'settings.html', icon : 'fa-gears' }
+	],
+
+	footerOptions : [
+		{ label : 'Dashboard', url : '/index.html', icon : 'fa-dashboard'},
+		{ label : 'Contacts', url : 'contacts-flat.html', icon : 'fa-users' }
 	]
+
 
 };

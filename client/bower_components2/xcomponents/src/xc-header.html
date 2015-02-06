@@ -27,7 +27,7 @@
     </button>
 
 		<!--slide-in menu button-->
-		<button type="button" class="btn btn-default btn-menu pull-left offCanvasToggle" data-toggle="offcanvas" ng-show="!$root.hideList">
+		<button ng-if="hasMenu && !$root.hideList" type="button" class="btn btn-default btn-menu pull-left offCanvasToggle" data-toggle="offcanvas">
 	   <i class="fa fa-lg fa-bars"></i><span>Menu</span>
 	   </button>
 
@@ -94,59 +94,64 @@
 </div>
 
 <!--slide in menu-->
-  <nav id="offCanvasMenu" class="navmenu offcanvas offcanvas-left">
+  <nav id="offCanvasMenu" class="navmenu offcanvas offcanvas-left" ng-if="hasMenu">
     <ul class="nav">
+
       <li ng-repeat="o in ::menuOptions" ng-class="{'active' : isActive(o)}">
 
         <!--basic option-->
-        <a href="{{::o.url}}" ng-show="!hasSubmenu(o)">
-          <i class="fa fa-lg" ng-class="o.icon ? o.icon : null"></i>
-          {{::o.label}}
+        <a href="{{::o.url}}" ng-if="!hasSubmenu(o)">
+          <i class="fa fa-lg fa-fw" ng-class="o.icon ? o.icon : null"></i>&nbsp;{{::o.label}}
         </a>
 
         <!--option with submenu-->
-        <a href="#" ng-show="hasSubmenu(o)" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="fa fa-chevron-circle-right"></i>
-            {{::o.label}}
+        <a href="#" ng-if="hasSubmenu(o)" class="dropdown-toggle" data-toggle="collapse" ng-click="o.collapsed = !o.collapsed">
+            <i class="fa fa-fw fa-lg fa-chevron-circle-right"></i>&nbsp;{{::o.label}}
+        </a>
 
-            <ul class="list-unstyled">
-              <li ng-repeat="so in ::o.menuOptions"  ng-class="{'active' : isActive(so)}">
-                <a href="{{so.url}}">
-                  <i class="fa fa-fw" ng-class="so.icon ? so.icon : null"></i>
-                  {{::so.label}}
-                </a>
-              </li>
-            </ul>
-          </a>
+        <div collapse="o.collapsed" ng-if="hasSubmenu(o)" >
+
+          <ul class="nav navmenu-nav"  >
+            <li ng-repeat="so in ::o.menuOptions">
+              <a href="{{so.url}}">
+                <i class="fa fa-fw fa-lg" ng-class="so.icon ? so.icon : null"></i>&nbsp;{{::so.label}}
+              </a>
+            </li>
+          </ul>
+
+        </div>
+
       </li>
 
       <!--secondary menu options-->
       <li ng-repeat="o in ::menuOptionsSecondary" ng-class="{'active' : isActive(o)}">
 
         <!--basic option-->
-        <a href="{{::o.url}}" ng-show="!hasSubmenu(o)">
-          <i class="fa fa-lg" ng-class="o.icon ? o.icon : null"></i>
-          {{::o.label}}
+        <a href="{{::o.url}}" ng-if="!hasSubmenu(o)">
+          <i class="fa fa-fw fa-lg" ng-class="o.icon ? o.icon : null"></i>&nbsp;{{::o.label}}
         </a>
 
         <!--option with submenu-->
-        <a href="#" ng-show="hasSubmenu(o)" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="fa fa-chevron-circle-right"></i>
-            {{::o.label}}
+        <a href="#" ng-if="hasSubmenu(o)" class="dropdown-toggle" data-toggle="dropdown" ng-click="o.collapsed = !o.collapsed">
+          <i class="fa fa-fw fa-chevron-circle-right"></i>&nbsp;{{::o.label}}
+        </a>
+ 
+        <div collapse="o.collapsed" ng-if="hasSubmenu(o)" >
 
-            <ul class="list-unstyled">
-              <li ng-repeat="so in ::o.menuOptions"  ng-class="{'active' : isActive(so)}">
+          <ul class="nav navmenu-nav"  >
+              <li ng-repeat="so in ::o.menuOptions">
                 <a href="{{so.url}}">
-                  <i class="fa fa-fw" ng-class="so.icon ? so.icon : null"></i>
-                  {{::so.label}}
+                  <i class="fa fa-fw fa-lg" ng-class="so.icon ? so.icon : null"></i>&nbsp;{{::so.label}}
                 </a>
               </li>
-            </ul>
-          </a>
+          </ul>
+        </div>
+
       </li>
+     
     </ul>
 
-    <div ng-show="{{appVersion}}" style="margin-top:20px; padding-left: 20px; font-size: 12px; color: #777">{{appVersion}}</div>
+    <div ng-show="appVersion != ''" style="margin-top:20px; padding-left: 20px; font-size: 12px; color: #777">{{appVersion}}</div>
   </nav>
 
 </div>

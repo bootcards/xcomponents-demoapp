@@ -34,13 +34,15 @@
 		order-by="lastName"
 		order-reversed="false"
 		group-by="company"
-		url="/api/Contacts"
+		url="/api/Contacts/:id"
 		summary-field="name"
 		details-field="company"
 		image-field="thumbnailUrl"
 		image-placeholder-icon="user"
 		autoload-first="true"
-		type="categorised">
+		type="categorised"
+		filter-by="country"
+		filter-value="UK">
 
 		<xc-form 
 			url="/api/Contacts/:id" 
@@ -51,14 +53,6 @@
 	</xc-list>
 
 	<xc-footer>
-		<a href="/index.html" class="btn btn-default">
-			<i class="fa fa-2x fa-dashboard"></i>
-			Dashboard
-		</a>
-		<a href="/contacts-flat.html" class="btn btn-default">
-			<i class="fa fa-2x fa-users"></i>
-			Contacts
-		</a>     
-	</xc-footer>
+	
 
 </body></html>

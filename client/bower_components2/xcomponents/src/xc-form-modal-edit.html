@@ -21,8 +21,16 @@
 
 		<div class="form-group" ng-repeat="field in fieldsEdit" ng-class="{ 'has-error': cardForm[field.field].$invalid }">
 			<label class="col-xs-3 control-label">{{field.label}}</label>
-			<div class="col-xs-9" ng-if="field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'">
+			<div class="col-xs-9" ng-if="field.type=='text' || field.type=='link'">
 				<input class="form-control" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
+				<a class="fa fa-times-circle fa-lg clearer" ng-click="clearField(field.field)"></a>
+			</div>
+			<div class="col-xs-9" ng-if="field.type=='email'">
+				<input class="form-control" type="email" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
+				<a class="fa fa-times-circle fa-lg clearer" ng-click="clearField(field.field)"></a>
+			</div>
+			<div class="col-xs-9" ng-if="field.type=='phone'">
+				<input class="form-control" type="number" name="{{field.field}}" ng-model="selectedItem[field.field]" ng-required="field.required"  />
 				<a class="fa fa-times-circle fa-lg clearer" ng-click="clearField(field.field)"></a>
 			</div>
 			<div class="col-xs-9" ng-if="field.type=='date'">

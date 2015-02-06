@@ -119,3 +119,8 @@ a {
 	height : auto;
 	width : 300px;	
 }
+
+/*reset bootstrap style*/
+.bootcards-cards .list-group-item {
+	margin-bottom: 0;
+}

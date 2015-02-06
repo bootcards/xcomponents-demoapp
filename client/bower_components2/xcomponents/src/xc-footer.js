@@ -8,7 +8,13 @@ app.directive('xcFooter', function() {
 		replace : true,
 		restrict : 'E',
 		templateUrl : 'xc-footer.html',
-		transclude : true
+		transclude : true,
+
+		controller : function($rootScope, $scope, $document, xcUtils, $timeout) {
+
+			$scope.footerOptions = xcUtils.getConfig('footerOptions');
+
+		}
 
 	};
 

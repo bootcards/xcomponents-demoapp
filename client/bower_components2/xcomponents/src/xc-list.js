@@ -8,20 +8,20 @@ app.directive('xcList',
 
 		scope : {
 
-			title : '@',
+			title : '@',			/*title of the list*/
 			type : '@',				/*list type, options: flat (default), categorised, accordion*/
-			listWidth : '=' ,
-			summaryField : '@',
-			detailsField : '@',
-			detailsFieldType : '@',
+			listWidth : '=' ,		/*width of the list (nr 1..11)*/
+			summaryField : '@',		/*name of the field used as a summary field*/
+			detailsField : '@',     
+			detailsFieldType : '@',		/*text or date*/
 			detailsFieldSubTop : '@',
 			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
 			autoloadFirst : '=?',
 			allowAdd : '=',
 			groupBy : '@',			/*only relevant for categorised, accordion lists*/
-			filterBy : '@',			/*only relevant for flat lists*/
-			filterValue : '@',		/*only relevant for flat lists*/
+			filterBy : '@',			
+			filterValue : '@',		
 			orderBy : '@',
 			orderReversed : '@',
 			url : '@',
@@ -75,6 +75,22 @@ app.directive('xcList',
 				f.all().then( function(res) {
 					
 					var numRes = res.length;
+
+					if (scope.filterBy && scope.filterValue) {
+						//filter the result set
+						
+						var filteredRes = [];
+
+						angular.forEach( res, function(entry, idx) {
+
+							if (entry[scope.filterBy] == scope.filterValue) {
+								filteredRes.push( entry);
+							}
+						});
+
+						res = filteredRes;
+
+					}
 					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
@@ -84,25 +100,12 @@ app.directive('xcList',
 						//auto load first entry in the first group
 						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
 							scope.select( scope.groups[0].entries[0] );
+							if (scope.type == 'accordion') {		//auto expand first group
+								scope.groups[0].collapsed = false;
+							}
 						}
-
+			
 					} else {			//flat or detailed
-
-						if (scope.filterBy && scope.filterValue) {
-							//filter the result set
-							
-							var filteredRes = [];
-
-							angular.forEach( res, function(entry, idx) {
-
-								if (entry[scope.filterBy] == scope.filterValue) {
-									filteredRes.push( entry);
-								}
-							});
-
-							res = filteredRes;
-
-						}
 
 						//sort the results
 						res.sort( xcUtils.getSortByFunction( scope.orderBy, orderReversed ) );

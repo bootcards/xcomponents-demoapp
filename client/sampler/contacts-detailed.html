@@ -12,11 +12,11 @@
 		}
 	</style>
 	
-	<!-- polyfill for html imports + xcomponents imports -->
+	<!-- polyfill for html imports -->
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
+	
 	<link rel="import" href="/bower_components2/xcomponents/includes.html">
  
- 	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
 	<script src="contacts.js"></script>
 	
@@ -35,10 +35,10 @@
 		url="/api/Contacts/:id"
 		summary-field="name"
 		details-field="company"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user"
+		details-field-sub-top="phone"
+		details-field-sub-bottom="country"
 		autoload-first="true"
-		type="flat"
+		type="detailed"
 		infinite-scroll="true">
 
 		<xc-form 
@@ -50,15 +50,7 @@
 	</xc-list>
 
 	<xc-footer>
-		<a href="/index.html" class="btn btn-default">
-			<i class="fa fa-2x fa-dashboard"></i>
-			Dashboard
-		</a>
-		<a href="contacts.html" class="btn btn-default">
-			<i class="fa fa-2x fa-users"></i>
-			Contacts
-		</a>     
+		
 	</xc-footer>
-	
-	
+
 </body></html>

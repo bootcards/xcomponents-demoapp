@@ -25,6 +25,7 @@ app.directive('xcHeader', function() {
 
 			//split primary/ secondary option
 			angular.forEach( xcUtils.getConfig('menuOptions'), function(option) {
+				option.collapsed = true;
 				if (option.hasOwnProperty('isSecondary') && option.isSecondary) {
 					$scope.menuOptionsSecondary.push( option);
 					$scope.hasSecondaryOptions = true;
@@ -40,6 +41,11 @@ app.directive('xcHeader', function() {
 			$scope.appVersion = xcUtils.getConfig('appVersion');
 
 			var loc = window.location.href;
+
+			$scope.hasMenu = function() {
+				console.log($scope.menuOptions.length );
+				return $scope.menuOptions.length > 0 || $scope.hasSecondaryOptions;
+			}
 
 			$scope.isActive = function(menuOption) {
 				return (loc.indexOf(menuOption.url)> -1);

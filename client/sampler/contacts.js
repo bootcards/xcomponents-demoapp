@@ -7,7 +7,7 @@ xcontrols.fields = [
 		{ field : 'title' }, 
 		{ field : 'city' },
 		{ field : 'company' },
-		{ field : 'country', read : false},
+		{ field : 'country', type : 'select', options : ['UK', 'USA (West Coast)', 'USA (East Coast)', 'The Netherlands']},
 		{ label : 'Mobile enabled', field : 'mobileEnabled', type : 'toggle', labelTrue : 'On', labelFalse : 'Off'},
 		{ field : 'devices', type : 'select-multiple', options : ['iPad 4', 'iPad Air', 'iPhone 6', 'iPhone 6 Plus', 'iPod Touch']},
 		{ label : 'Email' , field:'email', type:'email', required: true},

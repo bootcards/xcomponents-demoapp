@@ -1,4 +1,4 @@
-/* xcomponents 1.0.0 2015-02-04 10:00 */
+/* xcomponents 1.0.0 2015-02-06 2:05 */
 
 var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
 
@@ -961,7 +961,13 @@ app.directive('xcFooter', function() {
 		replace : true,
 		restrict : 'E',
 		templateUrl : 'xc-footer.html',
-		transclude : true
+		transclude : true,
+
+		controller : function($rootScope, $scope, $document, xcUtils, $timeout) {
+
+			$scope.footerOptions = xcUtils.getConfig('footerOptions');
+
+		}
 
 	};
 
@@ -1326,6 +1332,7 @@ app.directive('xcHeader', function() {
 
 			//split primary/ secondary option
 			angular.forEach( xcUtils.getConfig('menuOptions'), function(option) {
+				option.collapsed = true;
 				if (option.hasOwnProperty('isSecondary') && option.isSecondary) {
 					$scope.menuOptionsSecondary.push( option);
 					$scope.hasSecondaryOptions = true;
@@ -1341,6 +1348,11 @@ app.directive('xcHeader', function() {
 			$scope.appVersion = xcUtils.getConfig('appVersion');
 
 			var loc = window.location.href;
+
+			$scope.hasMenu = function() {
+				console.log($scope.menuOptions.length );
+				return $scope.menuOptions.length > 0 || $scope.hasSecondaryOptions;
+			}
 
 			$scope.isActive = function(menuOption) {
 				return (loc.indexOf(menuOption.url)> -1);
@@ -1423,20 +1435,20 @@ app.directive('xcList',
 
 		scope : {
 
-			title : '@',
+			title : '@',			/*title of the list*/
 			type : '@',				/*list type, options: flat (default), categorised, accordion*/
-			listWidth : '=' ,
-			summaryField : '@',
-			detailsField : '@',
-			detailsFieldType : '@',
+			listWidth : '=' ,		/*width of the list (nr 1..11)*/
+			summaryField : '@',		/*name of the field used as a summary field*/
+			detailsField : '@',     
+			detailsFieldType : '@',		/*text or date*/
 			detailsFieldSubTop : '@',
 			detailsFieldSubBottom : '@',
 			allowSearch : '=?',
 			autoloadFirst : '=?',
 			allowAdd : '=',
 			groupBy : '@',			/*only relevant for categorised, accordion lists*/
-			filterBy : '@',			/*only relevant for flat lists*/
-			filterValue : '@',		/*only relevant for flat lists*/
+			filterBy : '@',			
+			filterValue : '@',		
 			orderBy : '@',
 			orderReversed : '@',
 			url : '@',
@@ -1490,6 +1502,22 @@ app.directive('xcList',
 				f.all().then( function(res) {
 					
 					var numRes = res.length;
+
+					if (scope.filterBy && scope.filterValue) {
+						//filter the result set
+						
+						var filteredRes = [];
+
+						angular.forEach( res, function(entry, idx) {
+
+							if (entry[scope.filterBy] == scope.filterValue) {
+								filteredRes.push( entry);
+							}
+						});
+
+						res = filteredRes;
+
+					}
 					
 					if (scope.type == 'categorised' || scope.type=='accordion') {
 
@@ -1499,25 +1527,12 @@ app.directive('xcList',
 						//auto load first entry in the first group
 						if (scope.autoloadFirst && !scope.selected && !bootcards.isXS() ) {
 							scope.select( scope.groups[0].entries[0] );
+							if (scope.type == 'accordion') {		//auto expand first group
+								scope.groups[0].collapsed = false;
+							}
 						}
-
+			
 					} else {			//flat or detailed
-
-						if (scope.filterBy && scope.filterValue) {
-							//filter the result set
-							
-							var filteredRes = [];
-
-							angular.forEach( res, function(entry, idx) {
-
-								if (entry[scope.filterBy] == scope.filterValue) {
-									filteredRes.push( entry);
-								}
-							});
-
-							res = filteredRes;
-
-						}
 
 						//sort the results
 						res.sort( xcUtils.getSortByFunction( scope.orderBy, orderReversed ) );
@@ -2136,7 +2151,13 @@ angular.module("xc-footer.html", []).run(["$templateCache", function($templateCa
     "			</div>\n" +
     "\n" +
     "			<div class=\"btn-group\">\n" +
-    "				<ng-transclude></ng-transclude>     \n" +
+    "				<ng-transclude></ng-transclude>\n" +
+    "\n" +
+    "				<a href=\"{{o.url}}\" ng-repeat=\"o in ::footerOptions\" class=\"btn btn-default\">\n" +
+    "		            <i class=\"fa fa-2x\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
+    "		            {{o.label}}\n" +
+    "		        </a>\n" +
+    "\n" +
     "			</div>\n" +
     "		</div>\n" +
     "	</div>");
@@ -2166,8 +2187,16 @@ angular.module("xc-form-modal-edit.html", []).run(["$templateCache", function($t
     "\n" +
     "		<div class=\"form-group\" ng-repeat=\"field in fieldsEdit\" ng-class=\"{ 'has-error': cardForm[field.field].$invalid }\">\n" +
     "			<label class=\"col-xs-3 control-label\">{{field.label}}</label>\n" +
-    "			<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='email' || field.type=='phone' || field.type=='link'\">\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='text' || field.type=='link'\">\n" +
     "				<input class=\"form-control\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "				<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clearField(field.field)\"></a>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='email'\">\n" +
+    "				<input class=\"form-control\" type=\"email\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
+    "				<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clearField(field.field)\"></a>\n" +
+    "			</div>\n" +
+    "			<div class=\"col-xs-9\" ng-if=\"field.type=='phone'\">\n" +
+    "				<input class=\"form-control\" type=\"number\" name=\"{{field.field}}\" ng-model=\"selectedItem[field.field]\" ng-required=\"field.required\"  />\n" +
     "				<a class=\"fa fa-times-circle fa-lg clearer\" ng-click=\"clearField(field.field)\"></a>\n" +
     "			</div>\n" +
     "			<div class=\"col-xs-9\" ng-if=\"field.type=='date'\">\n" +
@@ -2319,7 +2348,7 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
     "    </button>\n" +
     "\n" +
     "		<!--slide-in menu button-->\n" +
-    "		<button type=\"button\" class=\"btn btn-default btn-menu pull-left offCanvasToggle\" data-toggle=\"offcanvas\" ng-show=\"!$root.hideList\">\n" +
+    "		<button ng-if=\"hasMenu && !$root.hideList\" type=\"button\" class=\"btn btn-default btn-menu pull-left offCanvasToggle\" data-toggle=\"offcanvas\">\n" +
     "	   <i class=\"fa fa-lg fa-bars\"></i><span>Menu</span>\n" +
     "	   </button>\n" +
     "\n" +
@@ -2386,59 +2415,64 @@ angular.module("xc-header.html", []).run(["$templateCache", function($templateCa
     "</div>\n" +
     "\n" +
     "<!--slide in menu-->\n" +
-    "  <nav id=\"offCanvasMenu\" class=\"navmenu offcanvas offcanvas-left\">\n" +
+    "  <nav id=\"offCanvasMenu\" class=\"navmenu offcanvas offcanvas-left\" ng-if=\"hasMenu\">\n" +
     "    <ul class=\"nav\">\n" +
+    "\n" +
     "      <li ng-repeat=\"o in ::menuOptions\" ng-class=\"{'active' : isActive(o)}\">\n" +
     "\n" +
     "        <!--basic option-->\n" +
-    "        <a href=\"{{::o.url}}\" ng-show=\"!hasSubmenu(o)\">\n" +
-    "          <i class=\"fa fa-lg\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
-    "          {{::o.label}}\n" +
+    "        <a href=\"{{::o.url}}\" ng-if=\"!hasSubmenu(o)\">\n" +
+    "          <i class=\"fa fa-lg fa-fw\" ng-class=\"o.icon ? o.icon : null\"></i>&nbsp;{{::o.label}}\n" +
     "        </a>\n" +
     "\n" +
     "        <!--option with submenu-->\n" +
-    "        <a href=\"#\" ng-show=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n" +
-    "            <i class=\"fa fa-chevron-circle-right\"></i>\n" +
-    "            {{::o.label}}\n" +
+    "        <a href=\"#\" ng-if=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"collapse\" ng-click=\"o.collapsed = !o.collapsed\">\n" +
+    "            <i class=\"fa fa-fw fa-lg fa-chevron-circle-right\"></i>&nbsp;{{::o.label}}\n" +
+    "        </a>\n" +
     "\n" +
-    "            <ul class=\"list-unstyled\">\n" +
-    "              <li ng-repeat=\"so in ::o.menuOptions\"  ng-class=\"{'active' : isActive(so)}\">\n" +
-    "                <a href=\"{{so.url}}\">\n" +
-    "                  <i class=\"fa fa-fw\" ng-class=\"so.icon ? so.icon : null\"></i>\n" +
-    "                  {{::so.label}}\n" +
-    "                </a>\n" +
-    "              </li>\n" +
-    "            </ul>\n" +
-    "          </a>\n" +
+    "        <div collapse=\"o.collapsed\" ng-if=\"hasSubmenu(o)\" >\n" +
+    "\n" +
+    "          <ul class=\"nav navmenu-nav\"  >\n" +
+    "            <li ng-repeat=\"so in ::o.menuOptions\">\n" +
+    "              <a href=\"{{so.url}}\">\n" +
+    "                <i class=\"fa fa-fw fa-lg\" ng-class=\"so.icon ? so.icon : null\"></i>&nbsp;{{::so.label}}\n" +
+    "              </a>\n" +
+    "            </li>\n" +
+    "          </ul>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
     "      </li>\n" +
     "\n" +
     "      <!--secondary menu options-->\n" +
     "      <li ng-repeat=\"o in ::menuOptionsSecondary\" ng-class=\"{'active' : isActive(o)}\">\n" +
     "\n" +
     "        <!--basic option-->\n" +
-    "        <a href=\"{{::o.url}}\" ng-show=\"!hasSubmenu(o)\">\n" +
-    "          <i class=\"fa fa-lg\" ng-class=\"o.icon ? o.icon : null\"></i>\n" +
-    "          {{::o.label}}\n" +
+    "        <a href=\"{{::o.url}}\" ng-if=\"!hasSubmenu(o)\">\n" +
+    "          <i class=\"fa fa-fw fa-lg\" ng-class=\"o.icon ? o.icon : null\"></i>&nbsp;{{::o.label}}\n" +
     "        </a>\n" +
     "\n" +
     "        <!--option with submenu-->\n" +
-    "        <a href=\"#\" ng-show=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n" +
-    "            <i class=\"fa fa-chevron-circle-right\"></i>\n" +
-    "            {{::o.label}}\n" +
+    "        <a href=\"#\" ng-if=\"hasSubmenu(o)\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" ng-click=\"o.collapsed = !o.collapsed\">\n" +
+    "          <i class=\"fa fa-fw fa-chevron-circle-right\"></i>&nbsp;{{::o.label}}\n" +
+    "        </a>\n" +
+    " \n" +
+    "        <div collapse=\"o.collapsed\" ng-if=\"hasSubmenu(o)\" >\n" +
     "\n" +
-    "            <ul class=\"list-unstyled\">\n" +
-    "              <li ng-repeat=\"so in ::o.menuOptions\"  ng-class=\"{'active' : isActive(so)}\">\n" +
+    "          <ul class=\"nav navmenu-nav\"  >\n" +
+    "              <li ng-repeat=\"so in ::o.menuOptions\">\n" +
     "                <a href=\"{{so.url}}\">\n" +
-    "                  <i class=\"fa fa-fw\" ng-class=\"so.icon ? so.icon : null\"></i>\n" +
-    "                  {{::so.label}}\n" +
+    "                  <i class=\"fa fa-fw fa-lg\" ng-class=\"so.icon ? so.icon : null\"></i>&nbsp;{{::so.label}}\n" +
     "                </a>\n" +
     "              </li>\n" +
-    "            </ul>\n" +
-    "          </a>\n" +
+    "          </ul>\n" +
+    "        </div>\n" +
+    "\n" +
     "      </li>\n" +
+    "     \n" +
     "    </ul>\n" +
     "\n" +
-    "    <div ng-show=\"{{appVersion}}\" style=\"margin-top:20px; padding-left: 20px; font-size: 12px; color: #777\">{{appVersion}}</div>\n" +
+    "    <div ng-show=\"appVersion != ''\" style=\"margin-top:20px; padding-left: 20px; font-size: 12px; color: #777\">{{appVersion}}</div>\n" +
     "  </nav>\n" +
     "\n" +
     "</div>");
@@ -2484,8 +2518,8 @@ angular.module("xc-list-accordion.html", []).run(["$templateCache", function($te
     "						ng-class=\"{'active' : selected == item}\">\n" +
     "\n" +
     "						<!--(placeholder) icon-->\n" +
-    "						<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
-    "						<i ng-if=\"showIcon(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "						<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "						<i ng-if=\"showIcon(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
     "					\n" +
     "						<!--image-->\n" +
     "						<img \n" +
@@ -2553,8 +2587,8 @@ angular.module("xc-list-categorised.html", []).run(["$templateCache", function($
     "						ng-class=\"{'active' : selected == item}\">\n" +
     "\n" +
     "						<!--(placeholder) icon-->\n" +
-    "						<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
-    "						<i ng-if=\"showIcon(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "						<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "						<i ng-if=\"showIcon(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
     "					\n" +
     "						<!--image-->\n" +
     "						<img \n" +
@@ -2621,8 +2655,8 @@ angular.module("xc-list-detailed.html", []).run(["$templateCache", function($tem
     "						<div class=\"col-sm-6\">\n" +
     "\n" +
     "							<!--(placeholder) icon-->\n" +
-    "							<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
-    "							<i ng-if=\"showIcon(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "							<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "							<i ng-if=\"showIcon(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
     "							\n" +
     "							<!--image-->\n" +
     "							<img \n" +
@@ -2692,8 +2726,8 @@ angular.module("xc-list-flat.html", []).run(["$templateCache", function($templat
     "					ng-class=\"{'active' : selected == item}\">\n" +
     "\n" +
     "					<!--(placeholder) icon-->\n" +
-    "					<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
-    "					<i ng-if=\"showIcon(item)\" class=\"fa fa-3x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
+    "					<i ng-if=\"showPlaceholder(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + imagePlaceholderIcon\"></i>\n" +
+    "					<i ng-if=\"showIcon(item)\" class=\"fa fa-2x pull-left\" ng-class=\"'fa-' + item[iconField]\"></i>\n" +
     "					\n" +
     "					<!--image-->\n" +
     "					<img \n" +
