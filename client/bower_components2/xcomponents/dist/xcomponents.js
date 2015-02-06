@@ -1,4 +1,4 @@
-/* xcomponents 1.0.0 2015-02-06 2:05 */
+/* xcomponents 1.0.0 2015-02-06 4:50 */
 
 var app = angular.module("xc.factories", ['ngResource', 'pouchdb']);
 
@@ -1185,12 +1185,12 @@ app.directive('xcForm',
 				}
 
 			});
-
+ 
 			//load specified entry 
 			if (typeof $scope.itemId != 'undefined' ) {
 
 				var f = null;
-				switch( attrs.datastoreType) {
+				switch( $attrs.datastoreType) {
 					case 'pouch':
 						f=PouchFactory; break;
 					case 'lowla':

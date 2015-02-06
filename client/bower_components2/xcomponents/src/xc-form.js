@@ -60,12 +60,12 @@ app.directive('xcForm',
 				}
 
 			});
-
+ 
 			//load specified entry 
 			if (typeof $scope.itemId != 'undefined' ) {
 
 				var f = null;
-				switch( attrs.datastoreType) {
+				switch( $attrs.datastoreType) {
 					case 'pouch':
 						f=PouchFactory; break;
 					case 'lowla':
