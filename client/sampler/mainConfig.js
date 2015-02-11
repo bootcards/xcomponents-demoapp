@@ -38,8 +38,7 @@ var xcontrols = {
 				{ label : 'Depts', url : 'contacts-by-dept.html', icon : 'fa-building' },
 				{ label : 'My Activities', url : 'activities-mine.html', icon : 'fa-tasks' }
 			]
-		},
-		{ label : 'Settings', url : 'settings.html', icon : 'fa-gears' }
+		}
 	],
 
 	footerOptions : [
