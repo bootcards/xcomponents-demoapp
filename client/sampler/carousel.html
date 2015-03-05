@@ -4,6 +4,13 @@
 <head>
 	<title>XControls</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!--set the hidden class here, so everything is immediately hidden-->
+	<style type="text/css">
+		.hidden {
+			display:none;
+		}
+	</style>
 	
 	<!-- polyfill for html imports -->
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
@@ -27,13 +34,6 @@
 				text : "Bike"}
 		];
 
-		xcontrols.carouselSlides = [
-			
-			{image : "images/fog.jpeg", text : "Fog"},
-			{image : "images/mountain.jpeg", text : "Mountain"},
-			{image : "images/bike.jpeg", text : "Bike"}
-		];
-
 	</script>
 	
 </head>
@@ -44,7 +44,7 @@
 
 	<div class="container bootcards-container">
 
-		<xc-carousel></xc-carousel>
+		<xc-carousel interval="1000"></xc-carousel>
 
 	</div>
 	
