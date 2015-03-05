@@ -40,8 +40,8 @@
 		type="flat">
 
  		<div>
- 	
-	 		<xc-base ng-if="$parent.selected.id =='base'" footer-text="Built with Bootcards - Base Card"
+
+	 		<xc-base ng-if="!$parent.selected.id || $parent.selected.id =='base'" footer-text="Built with Bootcards - Base Card"
 	 			title="Base Card">
 	 			<div class="list-group-item">
 			    	<p class="list-group-item-text">Name</p>
