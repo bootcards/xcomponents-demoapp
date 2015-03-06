@@ -3,7 +3,7 @@ xcontrols.modelName = 'Activity';
 xcontrols.fields = [
 		{ field : 'contact', required: true},
 		{ field : 'company', required: true},
-		{ field : 'date', type: 'date' }, 
+		{ field : 'date', type: 'date', default : 'now' }, 
 		{ field : 'type', type : 'select', options : ['Document', 'Discussion', 'Call Report', 'To-do', 'Reminder', 'Note'] },
 		{ label : 'Assigned to', field : 'assignedTo' },
 		{ field : 'title'},
