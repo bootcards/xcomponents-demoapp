@@ -12,6 +12,7 @@ xcontrols.fields = [
 		{ field : 'devices', type : 'select-multiple', options : ['iPad 4', 'iPad Air', 'iPhone 6', 'iPhone 6 Plus', 'iPod Touch']},
 		{ label : 'Email' , field:'email', type:'email', required: true},
 		{ label : 'Phone', field:'phone', type: 'phone'},
+		{ label : 'Last contact', field : 'lastContact', type : 'date', default : 'now'},
 		{ field : 'comments', type : 'multiline'}
 	];
 

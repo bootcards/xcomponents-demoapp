@@ -37,6 +37,9 @@
     "phone": {
       "type": "string"
     },
+    "lastContact" :{
+      "type" : "date"
+    },
     "comments": {
       "type": "string"
     }
