@@ -1,7 +1,7 @@
 module.exports = {
 
 	restAPIHost			: "localhost",
-	restAPIPort			: 3000,
+	restAPIPort			: 3001,
 	restAPIPathContacts	: "/api/Contacts",
 	restAPIPathActivities	: "/api/Activities",
 	restAPIPathNotes 	: "/api/Notes",
