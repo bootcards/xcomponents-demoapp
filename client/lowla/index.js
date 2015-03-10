@@ -1,6 +1,6 @@
 
 window.addEventListener('HTMLImportsLoaded', function(e){
-  var app = angular.module('xcontrols');
+  var app = angular.module('xcomponents');
 
   //extend controller
   app.controller('xcPouchCtrl', function($scope, $controller, $http, LowlaFactory, configService) {

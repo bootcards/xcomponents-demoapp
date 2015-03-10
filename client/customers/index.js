@@ -1,8 +1,8 @@
 
-xcontrols.charts = [];
+xcomponents.charts = [];
 
 //fill the chart data
-xcontrols.charts['closed-sales'] = [
+xcomponents.charts['closed-sales'] = [
   {label: 'Guy Bardsley', value: 560 },
   {label: 'Adam Callahan', value: 1500 },
   {label: 'Arlo Geist', value: 3750 },
@@ -13,7 +13,7 @@ xcontrols.charts['closed-sales'] = [
 
 window.addEventListener('HTMLImportsLoaded', function(e){
 
-  var app = angular.module('xcontrols');
+  var app = angular.module('xcomponents');
 
   //extend controller
   app.controller('xcCustomersCtrl', function($scope, $controller, RESTFactory, configService) {

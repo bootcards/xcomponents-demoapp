@@ -1,6 +1,6 @@
-xcontrols.modelName = 'Company';
+xcomponents.modelName = 'Company';
 
-xcontrols.fields = [
+xcomponents.fields = [
 		{ field : 'name', required : true},
 		{ field : 'city' },
 		{ field : 'country', read : false},
@@ -10,7 +10,7 @@ xcontrols.fields = [
 
 	];
 
-xcontrols.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/';
+xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcomponentssampler_v1_2.nsf/';
 
 /*
 

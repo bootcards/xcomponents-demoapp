@@ -1,7 +1,7 @@
 
 var modalModule = function() {
 
-  var app = angular.module('xcontrols');
+  var app = angular.module('xcomponents');
 
   app.controller('ModalDemoCtrl', function ($scope, $modal, $log) {
 

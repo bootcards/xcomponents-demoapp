@@ -1,6 +1,6 @@
-xcontrols.modelName = 'Card';
+xcomponents.modelName = 'Card';
 
-xcontrols.listEntries = [
+xcomponents.listEntries = [
 
 	{ id : "base", label : "Base Card", description : "The root card", icon : "square-o"},
 	{ id : "chart", label : "Chart Card", description : "To show Chart Data", icon : "area-chart"},

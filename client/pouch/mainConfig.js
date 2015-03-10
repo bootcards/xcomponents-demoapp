@@ -1,4 +1,4 @@
-var xcontrols = {
+var xcomponents = {
 
 	appVersion : '0.1',
 

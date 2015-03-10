@@ -1,6 +1,6 @@
-xcontrols.modelName = 'Contact';
+xcomponents.modelName = 'Contact';
 
-xcontrols.fields = [
+xcomponents.fields = [
 		{ label : 'First name *' , field: 'firstName', required: true, read: false},
 		{ label : 'Last name *' , field: 'lastName', required: true, read: false},
 		{ field : 'name', edit: false, formula : ['firstName', 'lastName'] },
@@ -16,4 +16,4 @@ xcontrols.fields = [
 		{ field : 'comments', type : 'multiline'}
 	];
 
-xcontrols.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/';
+xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcomponentssampler_v1_2.nsf/';

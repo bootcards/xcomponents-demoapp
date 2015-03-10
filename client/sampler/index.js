@@ -1,9 +1,9 @@
 
 
-xcontrols.charts = [];
+xcomponents.charts = [];
 
 //fill the chart data
-xcontrols.charts['closed-sales'] = [
+xcomponents.charts['closed-sales'] = [
   {label: 'Guy Bardsley', value: 560 },
   {label: 'Adam Callahan', value: 1500 },
   {label: 'Arlo Geist', value: 3750 },
