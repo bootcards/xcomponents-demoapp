@@ -15,4 +15,4 @@ xcomponents.fields = [
 		{ field : 'comments', type : 'multiline'}
 	];
 
-xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcomponents-latest.nsf/';
+xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcontrols-latest.nsf/';
