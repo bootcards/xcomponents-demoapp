@@ -16,4 +16,4 @@ xcomponents.fields = [
 		{ field : 'comments', type : 'multiline'}
 	];
 
-xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcomponentssampler_v1_2.nsf/';
+xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/';

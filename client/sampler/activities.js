@@ -10,4 +10,4 @@ xcomponents.fields = [
 		{ label : 'Details', field : 'detail', type : 'multiline'}
 	];
 
-xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcomponentssampler_v1_2.nsf/';
+xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolsssampler_v1_2.nsf/';
