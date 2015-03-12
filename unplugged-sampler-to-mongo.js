@@ -14,10 +14,10 @@ var https		= require('https');
 
 var config 			= require('./data-import/importConfig')
 var importFunctions	= require('./data-import/importFunctions');
+var prompt			= require('prompt');
 
 console.log(" ");
 console.log("***** started Domino-to-Mongo import *****");
-
 console.log("- using Domino API app on server " + config.dominoServerUrl + " at " + config.dominoDbPath);
 
 var httpOptions = {
@@ -25,17 +25,40 @@ var httpOptions = {
 	path : null,
 	method : null,
 	headers : null,
-	rejectUnauthorized: false,
-	auth : config.dominoUser + ':' + config.dominoPassword
+	rejectUnauthorized: false
 };
-
-console.log("- connecting as user " + config.dominoUser);
 
 var numImported = 0;
 
-importFromView('People By Last Name');
-importFromView('Activities By Contact');
+prompt.start();
+
+prompt.get(['username', 'password'], function (err, result) {
+    if (err) { return onErr(err); }
+    console.log('Command-line input received:');
+    console.log('  Username: ' + result.username, result.password);
+
+    readDominoData( result.username, result.password);
+
+});
+
+function onErr(err) {
+	//console.log(err);
+	return 1;
+}
+
+
+function readDominoData(dominoUser, dominoPassword) {
+
+	httpOptions.auth = dominoUser + ':' + dominoPassword;
+
+
+	console.log("- connecting as user " + dominoUser);
+
+	importFromView('People By Last Name');
+	importFromView('Activities By Contact');
 	
+}
+
 function importFromView(viewName) {
 	
 	var count = 50;		//items per request
@@ -131,3 +154,4 @@ function getNextResults( viewName, start, count ) {
 		console.error(e);
 	});
 }
+

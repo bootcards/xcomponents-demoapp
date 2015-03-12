@@ -10,9 +10,6 @@ module.exports = {
 	dominoServerUrl		: "demo.linqed.eu",
 	dominoDbPath 		: "/unplugged/XControlsSampler_v1_2.nsf",
 	
-	dominoUser			: "MongoExport",
-	dominoPassword 		: "welkom",
-
 	maxNumToImport		: 5000
 
 };

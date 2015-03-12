@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "main": "server/server.js",
   "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js --watch server --watch common --ext js,json ",
     "pretest": "jshint ."
   },
   "dependencies": {
@@ -12,6 +14,7 @@
     "loopback-boot": "^2.0.0",
     "loopback-connector-mongodb": "^1.4.4",
     "loopback-datasource-juggler": "^2.7.0",
+    "prompt": "^0.2.14",
     "serve-favicon": "^2.0.1"
   },
   "optionalDependencies": {
