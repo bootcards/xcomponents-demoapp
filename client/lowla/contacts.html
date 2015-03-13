@@ -28,32 +28,35 @@
 
 	<xc-header title="Contacts"></xc-header>
 
-<!-- url="/api/Contacts" -->
-	<xc-list
-		datastore-type="lowla"
-		url="example"
-		title="People"
-		list-width="5" 
-		allow-add="true"
-		order-by="lastName"
-		order-reversed="false"
-		
-		summary-field="name"
-		details-field="company"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user"
-		autoload-first="true"
-		type="flat">
+	<xc-layout>
 
-<!-- url="/api/Contacts/:id"  -->
-		<xc-form 
+		<xc-list
 			datastore-type="lowla"
 			url="example"
-			default-text="Select a contact from the list"
-			thumbnail-field="thumbnailUrl"
-			thumbnail-show-with="name"></xc-form>
+			title="People"
+			list-width="5" 
+			allow-add="true"
+			order-by="lastName"
+			order-reversed="false"
+			
+			summary-field="name"
+			details-field="company"
+			image-field="thumbnailUrl"
+			image-placeholder-icon="user"
+			autoload-first="true"
+			type="flat">
 
-	</xc-list>
+
+			<xc-form 
+				datastore-type="lowla"
+				url="example"
+				default-text="Select a contact from the list"
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
+
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 	   

@@ -33,28 +33,32 @@
 
 	<xc-header title="Accordion"></xc-header>
 
-	<xc-list 
-		title="People by Country"
-		list-width="5" 
-		allow-add="true"
-		order-by="lastName"
-		order-reversed="false"
-		group-by="country"
-		url="/api/Contacts/:id"
-		summary-field="name"
-		details-field="company"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user"
-		autoload-first="true"
-		type="accordion">
+	<xc-layout>
 
-		<xc-form 
-			url="/api/Contacts/:id" 
-			default-text="Select a contact from the list"
-			thumbnail-field="thumbnailUrl"
-			thumbnail-show-with="name"></xc-form>
+		<xc-list 
+			title="People by Country"
+			list-width="5" 
+			allow-add="true"
+			order-by="lastName"
+			order-reversed="false"
+			group-by="country"
+			url="/api/Contacts/:id"
+			summary-field="name"
+			details-field="company"
+			image-field="thumbnailUrl"
+			image-placeholder-icon="user"
+			autoload-first="true"
+			type="accordion">
 
-	</xc-list>
+			<xc-form 
+				url="/api/Contacts/:id" 
+				default-text="Select a contact from the list"
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
+
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 	

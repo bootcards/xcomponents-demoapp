@@ -39,29 +39,22 @@
 
 <body ng-controller="xcController" class="hidden">
 
-	<xc-header title="Customers">
-	
-	</xc-header>
+	<xc-header title="Customers"></xc-header>
 
-	<div class="container bootcards-container">
+	<xc-layout>
 
-		<div class="row">
+		<div class="col-sm-4 col-sm-offset-4 bootcards-cards">
 
-			<div class="col-sm-4 col-sm-offset-4 bootcards-cards">
-
-				<xc-form
-					url="/api/Settings/:id" 
-					datastore-type="rest"
-					item-id="54bf766a67c1b2000083feea">
-				</xc-form>
-				
-			</div>
-
+			<xc-form
+				url="/api/Settings/:id" 
+				datastore-type="rest"
+				item-id="54bf766a67c1b2000083feea">
+			</xc-form>
+			
 		</div>
-	</div>
 
-	<xc-footer>
-		    
-	</xc-footer>
+	</xc-layout>
+
+	<xc-footer>	</xc-footer>
 	
 </body></html>

@@ -29,35 +29,31 @@
 
 	<xc-header title="Customers"></xc-header>
 
-	<div class="container bootcards-container">
+	<xc-layout>
 
-		<div class="row">
+		<div class="bootcards-cards">
 
-			<div class="bootcards-cards">
+			<div class="col-sm-6">
 
-				<div class="col-sm-6">
+				<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
-
-						<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="{{numCompanies}}"></xc-summary-item>
-						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
-						<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="{{numNotes}}"></xc-summary-item>
-						<xc-summary-item title="Charts" target="charts.html" icon="fa-bar-chart-o" count="4"></xc-summary-item>
-						<xc-summary-item title="Files" target="files.html" icon="fa-files-o" count="36"></xc-summary-item>
-						
-					</xc-summary>
+					<xc-summary-item title="Companies" target="companies.html" icon="fa-building-o" count="{{numCompanies}}"></xc-summary-item>
+					<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
+					<xc-summary-item title="Notes" target="notes.html" icon="fa-clipboard" count="{{numNotes}}"></xc-summary-item>
+					<xc-summary-item title="Charts" target="charts.html" icon="fa-bar-chart-o" count="4"></xc-summary-item>
+					<xc-summary-item title="Files" target="files.html" icon="fa-files-o" count="36"></xc-summary-item>
 					
-				</div>
-				<div class="col-sm-6">
-
-					<xc-chart title="Closed sales by team member - $000s (December)"
-					chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
-					
-				</div>
+				</xc-summary>
+				
 			</div>
+			<div class="col-sm-6">
 
+				<xc-chart title="Closed sales by team member - $000s (December)"
+				chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
+				
+			</div>
 		</div>
-	</div>
+	</xc-layout>
 
 	<xc-footer>
 		  

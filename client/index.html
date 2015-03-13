@@ -28,29 +28,26 @@
 
 	<xc-header title="XComponents"></xc-header>
 
-	<div class="container bootcards-container">
+	<xc-layout>
 
-		<div class="row">
+		<div class="bootcards-cards">
 
-			<div class="bootcards-cards">
+			<div class="col-sm-12">
 
-				<div class="col-sm-12">
+				<xc-summary title="Sample apps" footer-text="Built with Bootcards - Summary Card">
 
-					<xc-summary title="Sample apps" footer-text="Built with Bootcards - Summary Card">
+					<xc-summary-item title="Sampler" icon="fa-tasks" target="sampler/index.html"></xc-summary-item>
+					<xc-summary-item title="Customers" icon="fa-users" target="customers/index.html"></xc-summary-item>
+					<xc-summary-item title="Customers (Pouch)" icon="fa-tasks" target="pouch/index.html"></xc-summary-item>
+					<xc-summary-item title="Customers (Lowla)" icon="fa-tasks" target="lowla/index.html"></xc-summary-item>
 
-						<xc-summary-item title="Sampler" icon="fa-tasks" target="sampler/index.html"></xc-summary-item>
-						<xc-summary-item title="Customers" icon="fa-users" target="customers/index.html"></xc-summary-item>
-						<xc-summary-item title="Customers (Pouch)" icon="fa-tasks" target="pouch/index.html"></xc-summary-item>
-						<xc-summary-item title="Customers (Lowla)" icon="fa-tasks" target="lowla/index.html"></xc-summary-item>
-
-					</xc-summary>
-					
-				</div>
-			
+				</xc-summary>
+				
 			</div>
-
+		
 		</div>
-	</div>
+
+	</xc-layout>
 
 	<xc-footer>
 		<a href="sampler/index.html" class="btn btn-default">

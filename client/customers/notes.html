@@ -28,25 +28,29 @@
 
 	<xc-header title="Customers"></xc-header>
 
-	<xc-list 
-		title="Notes"
-		list-width="5" 
-		allow-add="true"
-		order-by="date"
-		order-reversed="true"
-		url="/api/Notes/:id"
-		summary-field="subject"
-		details-field="date"
-		details-field-type="date"
-		image-placeholder-icon="file-text-o"
-		autoload-first="true"
-		type="flat">
+	<xc-layout>
 
-		<xc-form 
-			url="/api/Notes/:id" 
-			default-text="Select a note from the list"></xc-form>
+		<xc-list 
+			title="Notes"
+			list-width="5" 
+			allow-add="true"
+			order-by="date"
+			order-reversed="true"
+			url="/api/Notes/:id"
+			summary-field="subject"
+			details-field="date"
+			details-field-type="date"
+			image-placeholder-icon="file-text-o"
+			autoload-first="true"
+			type="flat">
 
-	</xc-list>
+			<xc-form 
+				url="/api/Notes/:id" 
+				default-text="Select a note from the list"></xc-form>
+
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 	    

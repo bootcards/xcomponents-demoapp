@@ -30,22 +30,26 @@
 
 	<xc-header title="Activities"></xc-header>
 
-	<xc-list 
-		title="Activities By Contact"
-		list-width="5" 
-		allow-add="true"
-		allow-search="false"
-		order-by="title"
-		order-reversed="false"
-		group-by="contact"
-		url="/api/Activities/:id"
-		summary-field="title"
-		details-field="company"
-		type="accordion">
+	<xc-layout>
 
-		<xc-form url="/api/Activities/:id"></xc-form> 
+		<xc-list 
+			title="Activities By Contact"
+			list-width="5" 
+			allow-add="true"
+			allow-search="false"
+			order-by="title"
+			order-reversed="false"
+			group-by="contact"
+			url="/api/Activities/:id"
+			summary-field="title"
+			details-field="company"
+			type="accordion">
 
-	</xc-list>
+			<xc-form url="/api/Activities/:id"></xc-form> 
+
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 		

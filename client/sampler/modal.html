@@ -32,8 +32,8 @@
 <body ng-controller="xcController" class="hidden">
 
     <xc-header title="Modal"></xc-header>
-
-    <div class="container bootcards-container">
+    
+    <xc-layout>
 
         <div ng-controller="ModalDemoCtrl">
             <script type="text/ng-template" id="myModalContent.html">
@@ -59,7 +59,8 @@
             <button class="btn btn-default" ng-click="open('sm')">Small modal</button>
             <div ng-show="selected">Selection from a modal: {{ selected }}</div>
         </div>
-    </div>
+
+    </xc-layout>
 
 </body>
 </html>

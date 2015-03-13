@@ -15,16 +15,14 @@ window.addEventListener('HTMLImportsLoaded', function(e){
   var app = angular.module('xcomponents');
 
   //extend controller
-  app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB, PouchFactory, configService) {
+  app.controller('xcPouchCtrl', function($scope, $controller, $http, pouchDB, PouchFactory) {
 
   	$controller('xcController', { $scope: $scope } );
 
       $scope.numContacts = 0;
 
-      configService.setEndpoint( "example" );
-
       //get number of contacts in the local pouchdb
-      PouchFactory.info().then( function(res) {
+      PouchFactory.info("example").then( function(res) {
         $scope.numContacts = res.count;
       });
 

@@ -30,38 +30,35 @@
 
 	</xc-header>
 
-	<div class="container bootcards-container">
-
-		<div class="row">
-
-			<div class="bootcards-cards">
-
-				<div class="col-sm-6">
-
-					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
-
-						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
-						
-					</xc-summary>
-					
-				</div>
-				<div class="col-sm-6">
-
-					<button ng-click="loadData()" class="btn btn-primary">Load local data</button>
-
-					<button ng-click="clearData()" class="btn btn-primary">Clear local data</button>
-
-					<!-- <button ng-click="updateInfo()" class="btn btn-primary">Update info</button>
-					<button ng-click="updateInfo2()" class="btn btn-primary">Update info 2</button>
-		 -->
-				</div>
-			</div>
-
-		</div>
-	</div>
-
-	<xc-footer>
 	
-	</xc-footer>
+	<xc-layout>
+
+		<div class="bootcards-cards">
+
+			<div class="col-sm-6">
+
+				<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
+
+					<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
+					
+				</xc-summary>
+				
+			</div>
+			
+			<div class="col-sm-6">
+
+				<button ng-click="loadData()" class="btn btn-primary">Load local data</button>
+
+				<button ng-click="clearData()" class="btn btn-primary">Clear local data</button>
+
+				<!-- <button ng-click="updateInfo()" class="btn btn-primary">Update info</button>
+				<button ng-click="updateInfo2()" class="btn btn-primary">Update info 2</button>
+	 -->
+			</div>
+		</div>
+
+	</xc-layout>
+
+	<xc-footer></xc-footer>
 	
 </body></html>

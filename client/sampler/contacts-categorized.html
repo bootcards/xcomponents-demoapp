@@ -33,32 +33,35 @@
 
 	<xc-header title="Categorized"></xc-header>
 
-	<xc-list 
-		title="People"
-		list-width="5" 
-		allow-add="true"
-		order-by="lastName"
-		order-reversed="false"
-		group-by="company"
-		url="/api/Contacts/:id"
-		summary-field="name"
-		details-field="company"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user"
-		autoload-first="true"
-		type="categorised"
-		filter-by="country"
-		filter-value="UK">
+	<xc-layout>
 
-		<xc-form 
-			url="/api/Contacts/:id" 
-			default-text="Select a contact from the list"
-			thumbnail-field="thumbnailUrl"
-			thumbnail-show-with="name"></xc-form>
+		<xc-list 
+			title="People"
+			list-width="5" 
+			allow-add="true"
+			order-by="lastName"
+			order-reversed="false"
+			group-by="company"
+			url="/api/Contacts/:id"
+			summary-field="name"
+			details-field="company"
+			image-field="thumbnailUrl"
+			image-placeholder-icon="user"
+			autoload-first="true"
+			type="categorised"
+			filter-by="country"
+			filter-value="UK">
 
-	</xc-list>
+			<xc-form 
+				url="/api/Contacts/:id" 
+				default-text="Select a contact from the list"
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
 
-	<xc-footer>
-	
+		</xc-list>
+
+	</xc-layout>
+
+	<xc-footer></xc-footer>
 
 </body></html>

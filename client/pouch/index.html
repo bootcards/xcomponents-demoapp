@@ -30,32 +30,29 @@
 
 	</xc-header>
 
-	<div class="container bootcards-container">
+	<xc-layout>
 
-		<div class="row">
+		<div class="bootcards-cards">
 
-			<div class="bootcards-cards">
+			<div class="col-sm-6">
 
-				<div class="col-sm-6">
+				<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
-
-						<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
-						
-					</xc-summary>
+					<xc-summary-item title="Contacts" target="contacts.html" icon="fa-users" count="{{numContacts}}"></xc-summary-item>
 					
-				</div>
-				<div class="col-sm-6">
-
-					<button ng-click="loadData()" class="btn btn-primary">Load data into local store</button>
-
-					<button ng-click="clearData()" class="btn btn-primary">Clear local datastore</button>
-		
-				</div>
+				</xc-summary>
+				
 			</div>
+			<div class="col-sm-6">
 
+				<button ng-click="loadData()" class="btn btn-primary">Load data into local store</button>
+
+				<button ng-click="clearData()" class="btn btn-primary">Clear local datastore</button>
+	
+			</div>
 		</div>
-	</div>
+
+	</xc-layout>
 
 	<xc-footer>
 		

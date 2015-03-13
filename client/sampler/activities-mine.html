@@ -33,27 +33,29 @@
 
 	<xc-header title="Activities"></xc-header>
 
-	<xc-list 
-		title="My Activities"
-		list-width="5" 
-		allow-add="true"
-		allow-search="false"
-		order-by="title"
-		filter-by="assignedTo"
-		filter-value="Brent Orrell"
-		order-reversed="false"
-		url="/api/Activities"
-		summary-field="title"
-		details-field="company"
-		autoload-first="true"
-		type="flat">
+	<xc-layout>
 
-		<xc-form url="/api/Activities/:id"></xc-form> 
+		<xc-list 
+			title="My Activities"
+			list-width="5" 
+			allow-add="true"
+			allow-search="false"
+			order-by="title"
+			filter-by="assignedTo"
+			filter-value="Brent Orrell"
+			order-reversed="false"
+			url="/api/Activities"
+			summary-field="title"
+			details-field="company"
+			autoload-first="true"
+			type="flat">
 
-	</xc-list>
+			<xc-form url="/api/Activities/:id"></xc-form> 
 
-	<xc-footer>
-		
-	</xc-footer>
+		</xc-list>
+
+	</xc-layout>
+
+	<xc-footer></xc-footer>
 	
 </body></html>

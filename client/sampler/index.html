@@ -37,37 +37,32 @@
 		</button>
 	</xc-header>
 
-	<div class="container bootcards-container">
+	<xc-layout>
 
-		<div class="row">
+		<div class="bootcards-cards">
 
-			<div class="bootcards-cards">
+			<div class="col-sm-6">
 
-				<div class="col-sm-6">
+				<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
 
-					<xc-summary title="Workspace" footer-text="Built with Bootcards - Summary Card">
-
-						<xc-summary-item title="Activities By Contact" count="12" icon="fa-tasks" target="activities-by-contact.html"></xc-summary-item>
-						<xc-summary-item title="Activities By Dept" count="12" icon="fa-tasks" target="activities-by-dept.html"></xc-summary-item>
-						<xc-summary-item title="Contacts" count="503" icon="fa-users" target="contacts-flat.html"></xc-summary-item>
-						
-						<!--bc todo: bootcards-summary panel-body > row > div doesn't work because of the transclude-->
-					</xc-summary>
+					<xc-summary-item title="Activities By Contact" count="12" icon="fa-tasks" target="activities-by-contact.html"></xc-summary-item>
+					<xc-summary-item title="Activities By Dept" count="12" icon="fa-tasks" target="activities-by-dept.html"></xc-summary-item>
+					<xc-summary-item title="Contacts" count="503" icon="fa-users" target="contacts-flat.html"></xc-summary-item>
 					
-				</div>
-				<div class="col-sm-6">
-
-					<xc-chart title="Closed sales by team member - $000s (December)"
-					chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
-					
-				</div>
+					<!--bc todo: bootcards-summary panel-body > row > div doesn't work because of the transclude-->
+				</xc-summary>
+				
 			</div>
+			<div class="col-sm-6">
 
+				<xc-chart title="Closed sales by team member - $000s (December)"
+				chart-id="closed-sales" chart-type="donut" value-prefix="$"></xc-chart>
+				
+			</div>
 		</div>
-	</div>
 
-	<xc-footer>
-		
-	</xc-footer>
+	</xc-layout>
+
+	<xc-footer></xc-footer>
 
 </body></html>

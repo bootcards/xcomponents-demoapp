@@ -25,53 +25,56 @@
 
 	<xc-header title="Customers"></xc-header>
 
-	<xc-list 
-		title="Companies"
-		list-width="7" 
-		allow-add="true"
-		order-by="name"
-		order-reversed="false"
-		url="/api/Companies"
-		summary-field="name"
-		details-field="city"
-		details-field-sub-top="website"
-		image-placeholder-icon="building-o"
-		autoload-first="true"
-		type="detailed">
+	<xc-layout>
 
-		<xc-form 
-			url="/api/Companies/:id" 
-			default-text="Select a company from the list"
+		<xc-list 
+			list-width="7" 
+			allow-add="true"
+			order-by="name"
+			order-reversed="false"
+			url="/api/Companies/:id"
+			summary-field="name"
+			details-field="city"
+			details-field-sub-top="website"
 			image-placeholder-icon="building-o"
-			thumbnail-field="thumbnailUrl"
-			thumbnail-show-with="name"></xc-form>
+			autoload-first="true"
+			type="detailed">
+
+			<xc-form 
+				url="/api/Companies/:id" 
+				default-text="Select a company from the list"
+				image-placeholder-icon="building-o"
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
 
 			<xc-list 
-				title="Contacts"
-				list-width="5" 
-				allow-add="true"
-				allow-search="false"
-				order-by="lastName"
-				order-reversed="false"
-				filter-by="company"
-				filter-value="ZTL"
-				url="/api/Contacts"
-				summary-field="name"
-				details-field="phone"
-				image-field="thumbnailUrl"
-				image-placeholder-icon="user"
-				autoload-first="false"
-				type="flat">
+					type="flat"
+					title="Contacts"
+					allow-add="false"
+					allow-search="false"
+					order-by="lastName"
+					order-reversed="false"
+					filter-by="company"
+					filter-src="name"
+					url="/api/Contacts/:id"
+					summary-field="name"
+					details-field="phone"
+					image-field="thumbnailUrl"
+					image-placeholder-icon="user"
+					autoload-first="false"
+					embedded="true">
 
-			<!-- 	<xc-form 
-					url="/api/Contacts/:id" 
-					default-text="Select a contact from the list"
-					thumbnail-field="thumbnailUrl"
-					thumbnail-show-with="name"></xc-form> -->
+				<!-- 	<xc-form 
+						url="/api/Contacts/:id" 
+						default-text="Select a contact from the list"
+						thumbnail-field="thumbnailUrl"
+						thumbnail-show-with="name"></xc-form> -->
 
 			</xc-list>
 
-	</xc-list>
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 		  

@@ -33,31 +33,32 @@
 
 	<xc-header title="Contacts"></xc-header>
 
-	<xc-list 
-		title="People"
-		list-width="5" 
-		allow-add="true"
-		order-by="lastName"
-		order-reversed="false"
-		url="/api/Contacts/:id"
-		summary-field="name"
-		details-field="company"
-		image-field="thumbnailUrl"
-		image-placeholder-icon="user"
-		autoload-first="true"
-		type="flat"
-		infinite-scroll="true">
+	<xc-layout>
 
-		<xc-form 
-			url="/api/Contacts/:id" 
-			default-text="Select a contact from the list"
-			thumbnail-field="thumbnailUrl"
-			thumbnail-show-with="name"></xc-form>
+		<xc-list 
+			list-width="5" 
+			allow-add="true"
+			order-by="lastName"
+			order-reversed="false"
+			url="/api/Contacts/:id"
+			summary-field="name"
+			details-field="company"
+			image-field="thumbnailUrl"
+			image-placeholder-icon="user"
+			autoload-first="true"
+			type="flat"
+			infinite-scroll="true">
 
-	</xc-list>
+			<xc-form 
+				url="/api/Contacts/:id" 
+				default-text="Select a contact from the list"
+				thumbnail-field="thumbnailUrl"
+				thumbnail-show-with="name"></xc-form>
 
-	<xc-footer>
-		   
-	</xc-footer>
+		</xc-list>
+
+	</xc-layout>
+
+	<xc-footer></xc-footer>
 
 </body></html>

@@ -33,129 +33,133 @@
 
 	<xc-header title="Cards"></xc-header>
 
-	<xc-list 
-		title="Cards"
-		list-width="5" 
-		allow-add="false"
-		allow-search="false"
-		src-data="listEntries"
-		summary-field="label"
-		details-field="description"
-		icon-field="icon"
-		autoload-first="true"
-		type="flat">
+	<xc-layout>
 
- 		<div>
+		<xc-list 
+			title="Cards"
+			list-width="5" 
+			allow-add="false"
+			allow-search="false"
+			src-data="listEntries"
+			summary-field="label"
+			details-field="description"
+			icon-field="icon"
+			autoload-first="true"
+			type="flat">
 
-	 		<xc-base ng-if="!$parent.selected.id || $parent.selected.id =='base'" footer-text="Built with Bootcards - Base Card"
-	 			title="Base Card">
-	 			<div class="list-group-item">
-			    	<p class="list-group-item-text">Name</p>
-			        <h4 class="list-group-item-heading">John Smith</h4>
-			    </div>
-			    <div class="list-group-item">
-			        <p class="list-group-item-text">Occupation</p>
-			        <h4 class="list-group-item-heading">Web Developer</h4>
-			    </div>
-			    <div class="list-group-item">
-			        <p class="list-group-item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mauris tellus, vehicula ut tellus id, suscipit dapibus tortor. Integer viverra turpis ac fringilla hendrerit. Sed faucibus posuere felis et pellentesque. Cras varius tortor vitae molestie tempor. Proin ut viverra elit, ac gravida tortor.</p>
-			    </div>
-	 		</xc-base>
+	 		<div>
 
-	 		<xc-chart ng-if="$parent.selected.id =='chart'" chart-id="closed-sales" 
-	 			title="Chart Card"
-	 			chart-type="donut"
-	 			value-prefix="$"></xc-chart>
+		 		<xc-base ng-if="!$parent.selected.id || $parent.selected.id =='base'" footer-text="Built with Bootcards - Base Card"
+		 			title="Base Card">
+		 			<div class="list-group-item">
+				    	<p class="list-group-item-text">Name</p>
+				        <h4 class="list-group-item-heading">John Smith</h4>
+				    </div>
+				    <div class="list-group-item">
+				        <p class="list-group-item-text">Occupation</p>
+				        <h4 class="list-group-item-heading">Web Developer</h4>
+				    </div>
+				    <div class="list-group-item">
+				        <p class="list-group-item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mauris tellus, vehicula ut tellus id, suscipit dapibus tortor. Integer viverra turpis ac fringilla hendrerit. Sed faucibus posuere felis et pellentesque. Cras varius tortor vitae molestie tempor. Proin ut viverra elit, ac gravida tortor.</p>
+				    </div>
+		 		</xc-base>
 
-	 		<xc-file ng-if="$parent.selected.id =='file'"
-	 			title="File Card"
-	 			file-name="File Name Goes Here"
-	 			file-type="pdf"
-				file-size="3.2 MB"
-				summary="Added by John Smith on 5 March 2014"
-				description="MediaFile card description lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum commodo, nulla ut porta interdum, mi mi venenatis felis, vitae pellentesque ante eros at enim."
-				url="/a/b/file.pdf"
-				allow-favorite="true"
-				allow-email="true">
-	 		</xc-file>
+		 		<xc-chart ng-if="$parent.selected.id =='chart'" chart-id="closed-sales" 
+		 			title="Chart Card"
+		 			chart-type="donut"
+		 			value-prefix="$"></xc-chart>
 
-			<xc-form ng-if="$parent.selected.id =='form'"
-				url="/api/Contacts/:id"
-				item-id="30233C541B56C65380257CDD0024D420" 
-				thumbnail-field="thumbnailUrl"
-				thumbnail-show-with="name"></xc-form>
+		 		<xc-file ng-if="$parent.selected.id =='file'"
+		 			title="File Card"
+		 			file-name="File Name Goes Here"
+		 			file-type="pdf"
+					file-size="3.2 MB"
+					summary="Added by John Smith on 5 March 2014"
+					description="MediaFile card description lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum commodo, nulla ut porta interdum, mi mi venenatis felis, vitae pellentesque ante eros at enim."
+					url="/a/b/file.pdf"
+					allow-favorite="true"
+					allow-email="true">
+		 		</xc-file>
 
-			<xc-file ng-if="$parent.selected.id =='media'"
-	 			title="Media Card"
-	 			description="Media card description lorem ipsum dolor est compendium"
-				allow-favorite="true"
-				allow-email="true"
-				preview-url="http://www.teamstudio.com/Portals/218295/images/istock_000001242290small.jpg">
-	 		</xc-file>
+				<xc-form ng-if="$parent.selected.id =='form'"
+					url="/api/Contacts/:id"
+					item-id="30233C541B56C65380257CDD0024D420" 
+					thumbnail-field="thumbnailUrl"
+					thumbnail-show-with="name"></xc-form>
 
-	 		<xc-reading ng-if="$parent.selected.id =='reading'"
-	 		title="Reading Card" 
-	 		footer-text="Built with Bootcards - Reading Card">
+				<xc-file ng-if="$parent.selected.id =='media'"
+		 			title="Media Card"
+		 			description="Media card description lorem ipsum dolor est compendium"
+					allow-favorite="true"
+					allow-email="true"
+					preview-url="http://www.teamstudio.com/Portals/218295/images/istock_000001242290small.jpg">
+		 		</xc-file>
 
-	 			<div>
-					<h1>h1. Bootstrap heading&nbsp;<small>Secondary text</small></h1>
-					<h2>h2. Bootstrap heading&nbsp;<small>Secondary text</small></h2>
-					<h3>h3. Bootstrap heading &nbsp;<small>Secondary text</small></h3>
-					<h4>h4. Bootstrap heading &nbsp;<small>Secondary text</small></h4>
-					<h5>h5. Bootstrap heading &nbsp;<small>Secondary text</small></h5>
-					<h6>h6. Bootstrap heading &nbsp;<small>Secondary text</small></h6>
-					<div class="bs-example" style="padding-top: 20px;">
-						<p>Nullam quis risus eget urna mollis ornare vel eu leo. Cum
-									sociis natoque penatibus et
-									magnis dis parturient montes, nascetur ridiculus mus. Nullam
-									id dolor id nibh ultricies vehicula.
-						</p>
-						<p>Cum sociis natoque penatibus et
-									magnis dis parturient montes,
-									nascetur ridiculus mus. Donec
-									ullamcorper nulla non metus
-									auctor fringilla. Duis mollis,
-									est non commodo luctus, nisi
-									erat porttitor ligula, eget
-									lacinia odio sem nec elit. Donec
-									ullamcorper nulla non metus
-									auctor fringilla.</p><p>Maecenas sed diam eget risus
-									varius blandit sit amet non
-									magna. Donec id elit non mi
-									porta gravida at eget metus.
-									Duis
-									mollis, est non commodo
-									luctus, nisi erat porttitor
-									ligula, eget
-									lacinia odio sem
-									nec elit.
-						</p>
+		 		<xc-reading ng-if="$parent.selected.id =='reading'"
+		 		title="Reading Card" 
+		 		footer-text="Built with Bootcards - Reading Card">
+
+		 			<div>
+						<h1>h1. Bootstrap heading&nbsp;<small>Secondary text</small></h1>
+						<h2>h2. Bootstrap heading&nbsp;<small>Secondary text</small></h2>
+						<h3>h3. Bootstrap heading &nbsp;<small>Secondary text</small></h3>
+						<h4>h4. Bootstrap heading &nbsp;<small>Secondary text</small></h4>
+						<h5>h5. Bootstrap heading &nbsp;<small>Secondary text</small></h5>
+						<h6>h6. Bootstrap heading &nbsp;<small>Secondary text</small></h6>
+						<div class="bs-example" style="padding-top: 20px;">
+							<p>Nullam quis risus eget urna mollis ornare vel eu leo. Cum
+										sociis natoque penatibus et
+										magnis dis parturient montes, nascetur ridiculus mus. Nullam
+										id dolor id nibh ultricies vehicula.
+							</p>
+							<p>Cum sociis natoque penatibus et
+										magnis dis parturient montes,
+										nascetur ridiculus mus. Donec
+										ullamcorper nulla non metus
+										auctor fringilla. Duis mollis,
+										est non commodo luctus, nisi
+										erat porttitor ligula, eget
+										lacinia odio sem nec elit. Donec
+										ullamcorper nulla non metus
+										auctor fringilla.</p><p>Maecenas sed diam eget risus
+										varius blandit sit amet non
+										magna. Donec id elit non mi
+										porta gravida at eget metus.
+										Duis
+										mollis, est non commodo
+										luctus, nisi erat porttitor
+										ligula, eget
+										lacinia odio sem
+										nec elit.
+							</p>
+						</div>
 					</div>
-				</div>
 
-	 		</xc-reading>
+		 		</xc-reading>
 
-	 		<xc-summary ng-if="$parent.selected.id =='summary'"
-	 		title="Summary Card" footer-text="Built with Bootcards - Summary Card">
+		 		<xc-summary ng-if="$parent.selected.id =='summary'"
+		 		title="Summary Card" footer-text="Built with Bootcards - Summary Card">
 
-				<xc-summary-item title="Contacts" icon="fa-users" target=""></xc-summary-item>
-				<xc-summary-item title="Companies" icon="fa-building-o" target=""></xc-summary-item>
-				<xc-summary-item title="Notes" icon="fa-clipboard" target=""></xc-summary-item>
-				<xc-summary-item title="Charts" icon="fa-bar-chart-o" target=""></xc-summary-item>
-				<xc-summary-item title="Files" icon="fa-files-o" target=""></xc-summary-item>
-				<xc-summary-item title="Tasks" icon="fa-check-square-o" target=""></xc-summary-item>
+					<xc-summary-item title="Contacts" icon="fa-users" target=""></xc-summary-item>
+					<xc-summary-item title="Companies" icon="fa-building-o" target=""></xc-summary-item>
+					<xc-summary-item title="Notes" icon="fa-clipboard" target=""></xc-summary-item>
+					<xc-summary-item title="Charts" icon="fa-bar-chart-o" target=""></xc-summary-item>
+					<xc-summary-item title="Files" icon="fa-files-o" target=""></xc-summary-item>
+					<xc-summary-item title="Tasks" icon="fa-check-square-o" target=""></xc-summary-item>
 
-			</xc-summary>
+				</xc-summary>
 
-			<xc-upload ng-if="$parent.selected.id =='upload'"
-	 			title="Upload Card">
+				<xc-upload ng-if="$parent.selected.id =='upload'"
+		 			title="Upload Card">
 
-	 		</xc-upload>
+		 		</xc-upload>
 
 
-	 	</div>
+		 	</div>
 
-	</xc-list>
+		</xc-list>
+
+	</xc-layout>
 
 	<xc-footer>
 	

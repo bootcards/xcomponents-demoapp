@@ -3,16 +3,14 @@ window.addEventListener('HTMLImportsLoaded', function(e){
   var app = angular.module('xcomponents');
 
   //extend controller
-  app.controller('xcPouchCtrl', function($scope, $controller, $http, LowlaFactory, configService) {
+  app.controller('xcPouchCtrl', function($scope, $controller, $http, LowlaFactory) {
 
   	$controller('xcController', { $scope: $scope });
 
       $scope.numContacts = 0;
 
-      configService.setEndpoint( "example" );
-
       //get number of items
-      LowlaFactory.info().then( function(res) {
+      LowlaFactory.info("example").then( function(res) {
         console.log('found ' + res.count + ' contacts', (new Date().getTime() ) );
         $scope.numContacts = res.count;
       });

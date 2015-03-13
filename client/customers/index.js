@@ -16,7 +16,7 @@ window.addEventListener('HTMLImportsLoaded', function(e){
   var app = angular.module('xcomponents');
 
   //extend controller
-  app.controller('xcCustomersCtrl', function($scope, $controller, RESTFactory, configService) {
+  app.controller('xcCustomersCtrl', function($scope, $controller, RESTFactory) {
 
   	$controller('xcController', { $scope: $scope });
 
@@ -24,18 +24,15 @@ window.addEventListener('HTMLImportsLoaded', function(e){
       $scope.numCompanies = 0;
       $scope.numNotes = 0;
 
-  	configService.setEndpoint( "/api/Contacts/:id" );
-      RESTFactory.info().then( function(res) {
+      RESTFactory.info("/api/Contacts/:id").then( function(res) {
       	$scope.numContacts = res.count;
       });
 
-      configService.setEndpoint( "/api/Companies/:id" );
-      RESTFactory.info().then( function(res) {
+      RESTFactory.info("/api/Companies/:id").then( function(res) {
       	$scope.numCompanies = res.count;
       });
 
-      configService.setEndpoint( "/api/Notes/:id" );
-      RESTFactory.info().then( function(res) {
+      RESTFactory.info("/api/Notes/:id").then( function(res) {
       	$scope.numNotes = res.count;
       });
 
