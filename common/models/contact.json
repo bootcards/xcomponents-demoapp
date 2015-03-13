@@ -42,6 +42,12 @@
     },
     "comments": {
       "type": "string"
+    },
+   "devicesPersonal": {
+      "type": "string"
+    },
+    "devicesBusiness": {
+      "type": "object"
     }
   },
   "validations": [],

@@ -9,7 +9,8 @@ xcomponents.fields = [
 		{ field : 'company' },
 		{ field : 'country', read : false},
 		{ label : 'Mobile enabled', field : 'mobileEnabled', type : 'toggle', labelTrue : 'On', labelFalse : 'Off'},
-		{ field : 'devices', type : 'select-multiple', options : ['iPad 4', 'iPad Air', 'iPhone 6', 'iPhone 6 Plus', 'iPod Touch']},
+		{ label : 'Device (local)', field : 'devicesPersonal', type : 'select', options : ['iPad 4', 'iPad Air', 'iPhone 6', 'iPhone 6 Plus', 'iPod Touch']},
+		{ label : 'Devices (remote)', field : 'devicesBusiness', type : 'select-multiple', options : { endpoint:'/api/Devices', label : 'name', value : 'id'} },
 		{ label : 'Email' , field:'email', type:'email', required: true},
 		{ label : 'Phone', field:'phone', type: 'phone'},
 		{ field : 'comments', type : 'multiline'}
