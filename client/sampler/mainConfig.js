@@ -1,10 +1,8 @@
-var xcomponents = {
+xcomponents.appVersion ='0.1';
 
-	appVersion : '0.1',
+xcomponents.menuAlignRight = false;
 
-	menuAlignRight : false,
-
-	menuOptions : [
+xcomponents.menuOptions = [
 
 		{ label : 'Languages', isSecondary : true, icon : 'fa-globe' ,
 			menuOptions : [
@@ -39,12 +37,9 @@ var xcomponents = {
 				{ label : 'My Activities', url : 'activities-mine.html', icon : 'fa-tasks' }
 			]
 		}
-	],
-
-	footerOptions : [
-		{ label : 'Dashboard', url : '/index.html', icon : 'fa-dashboard'},
-		{ label : 'Contacts', url : 'contacts-flat.html', icon : 'fa-users' }
 	]
 
-
-};
+xcomponents.footerOptions = [
+		{ label : 'Dashboard', url : '/index.html', icon : 'fa-dashboard'},
+		{ label : 'Contacts', url : 'contacts-flat.html', icon : 'fa-users' }
+	];

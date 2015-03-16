@@ -15,12 +15,13 @@
 		.hidden { display:none; }
 	</style>
 
-	<!-- polyfill for html imports -->
+	<!-- polyfill for html imports + xcomponents imports -->
+	<script type="text/javascript" src="/bower_components/xcomponents/dist/js/xc-base.js"></script>
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
 	<link rel="import" href="/bower_components/xcomponents/dist/includes/includes.html">
- 
+
+	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
-	<script src="contacts.js"></script>
 	
 </head>
 
@@ -37,15 +38,13 @@
 			list-width="5" 
 			allow-add="true"
 			order-by="lastName"
-			order-reversed="false"
-			
+			order-reversed="false"	
 			summary-field="name"
 			details-field="company"
 			image-field="thumbnailUrl"
 			image-placeholder-icon="user"
 			autoload-first="true"
 			type="flat">
-
 
 			<xc-form 
 				datastore-type="lowla"
