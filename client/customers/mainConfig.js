@@ -23,6 +23,33 @@ xcomponents.addCallback( function() {
 		
 	var app = angular.module('xcomponents');
 
+	//example: setup a custom filter
+	app.filter('notesname', function() {
+
+		return function(input) {
+
+		    if (!input){
+		      return "";
+		    }
+		  	try{
+		      input = JSON.parse(input);
+		    }catch(e){
+		      input = [input];
+		    }
+		    var out = [];
+		    for (var i=0; i<input.length; i++){
+		      var name = input[i];
+		      if (name.indexOf("CN=") > -1){
+		        name = name.replace("CN=", "");
+		        name = name.replace("OU=", "");
+		        name = name.replace("O=", "");
+		      }
+		      out.push(name);
+		    }
+		    return out.join(",");
+		};
+	});
+
 
 
 	app.run( [ '$http', '$rootScope', function($http, $rootScope) {

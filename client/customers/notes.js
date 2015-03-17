@@ -1,7 +1,7 @@
 xcomponents.modelName = 'Note';
 
 xcomponents.fields = [
-		{ field : 'subject', required : true }, 
+		{ field : 'subject', required : true, filter : 'notesname' }, 
 		{ field : 'date', type :'date', required : true, 'default' : 'now' },
 		{ field : 'details', type : 'html', label : null }
 	];
