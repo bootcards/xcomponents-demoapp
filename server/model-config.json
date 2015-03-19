@@ -40,16 +40,20 @@
     "dataSource": "mongo",
     "public": true
   },
-   "Company": {
+  "Company": {
     "dataSource": "mongo",
     "public": true
-  }, 
+  },
   "Device": {
     "dataSource": "mongo",
     "public": true
-  }, 
+  },
   "Setting": {
     "dataSource": "mongo",
+    "public": true
+  },
+  "container": {
+    "dataSource": "storage",
     "public": true
   }
 }
