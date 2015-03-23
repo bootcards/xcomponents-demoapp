@@ -1,9 +1,11 @@
-xcomponents.appVersion = '0.1';
+xcomponents.appVersion = '0.2';
 xcomponents.menuAlignRight = false;
 xcomponents.menuOptions = [
 		{ label : 'Dashboard', url : '/index.html', icon : 'fa-dashboard' },
 		{ label : 'Contacts', url : 'contacts.html', icon : 'fa-users' }
 	];
+
+xcomponents.footerTitle = "XComponents | version " + xcomponents.appVersion;
 xcomponents.footerOptions = xcomponents.menuOptions;
 xcomponents.modelName = 'Contact';
 

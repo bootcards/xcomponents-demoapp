@@ -1,4 +1,4 @@
-xcomponents.appVersion = '0.1';
+xcomponents.appVersion = '0.2';
 xcomponents.menuAlignRight = false,
 xcomponents.menuOptions = [
 	
@@ -7,6 +7,7 @@ xcomponents.menuOptions = [
 
 	];
 
+xcomponents.footerTitle = "XComponents | version " + xcomponents.appVersion;
 xcomponents.footerOptions = xcomponents.menuOptions;
 xcomponents.modelName = 'Contact';
 
