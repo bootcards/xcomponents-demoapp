@@ -12,13 +12,19 @@
 	<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
 
+	<!--set the hidden class here, so everything is immediately hidden-->
+	<style type="text/css">
+		.hidden {
+			display:none;
+		}
+	</style>
+
 	<!-- polyfill for html imports -->
 	<script type="text/javascript" src="/bower_components/xcomponents/dist/js/xc-base.js"></script>
 	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>	
 	<link rel="import" href="/bower_components/xcomponents/dist/includes/includes.html">
  
 	<script type="text/javascript" src="mainConfig.js"></script>
-	<script src="companies.js"></script>
 	
 </head>
 
@@ -29,6 +35,7 @@
 	<xc-layout>
 
 		<xc-list 
+			model-name="company"
 			list-width="7" 
 			allow-add="true"
 			order-by="name"
@@ -42,6 +49,7 @@
 			type="detailed">
 
 			<xc-form 
+				model-name="company"
 				url="/api/Companies/:id" 
 				default-text="Select a company from the list"
 				image-placeholder-icon="building-o"
@@ -49,21 +57,22 @@
 				thumbnail-show-with="name"></xc-form>
 
 			<xc-list 
-					type="flat"
-					title="Contacts"
-					allow-add="false"
-					allow-search="false"
-					order-by="lastName"
-					order-reversed="false"
-					filter-by="company"
-					filter-src="name"
-					url="/api/Contacts/:id"
-					summary-field="name"
-					details-field="phone"
-					image-field="thumbnailUrl"
-					image-placeholder-icon="user"
-					autoload-first="false"
-					embedded="true">
+				type="flat"
+				title="Contacts"
+				model-name="contact"
+				allow-add="false"
+				allow-search="false"
+				order-by="lastName"
+				order-reversed="false"
+				filter-by="company"
+				filter-src="name"
+				url="/api/Contacts/:id"
+				summary-field="name"
+				details-field="phone"
+				image-field="thumbnailUrl"
+				image-placeholder-icon="user"
+				autoload-first="false"
+				embedded="true">
 
 				<!-- 	<xc-form 
 						url="/api/Contacts/:id" 

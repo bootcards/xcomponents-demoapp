@@ -40,6 +40,7 @@
 
 		<xc-list 
 			title="My Activities"
+			model-name="activity"
 			list-width="5" 
 			allow-add="true"
 			allow-search="false"
@@ -53,7 +54,7 @@
 			autoload-first="true"
 			type="flat">
 
-			<xc-form url="/api/Activities/:id"></xc-form> 
+			<xc-form url="/api/Activities/:id" model-name="activity"></xc-form> 
 
 		</xc-list>
 

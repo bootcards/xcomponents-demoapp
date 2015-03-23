@@ -19,6 +19,50 @@ xcomponents.footerOptions = [
 		{ label : 'Contacts', url : 'contacts.html', icon : 'fa-users' }
 	];
 
+//set up models
+xcomponents.models['contact'] = {
+	name : 'Contact',
+	fields : [
+		{ label : 'First name' , field: 'firstName', required: true, read: false},
+		{ label : 'Last name' , field: 'lastName', required: true, read: false},
+		{ field : 'name', edit: false, formula : ['firstName', 'lastName'] },
+		{ field : 'title' }, 
+		{ field : 'city' },
+		{ field : 'company' },
+		{ field : 'country', read : false},
+		{ label : 'Mobile enabled', field : 'mobileEnabled', type : 'toggle', labelTrue : 'On', labelFalse : 'Off'},
+		{ label : 'Device (local)', field : 'devicesPersonal', type : 'select', options : ['iPad 4', 'iPad Air', 'iPhone 6', 'iPhone 6 Plus', 'iPod Touch']},
+		{ label : 'Devices (remote)', field : 'devicesBusiness', type : 'select-multiple', options : { endpoint:'/api/Devices', label : 'name', value : 'id'} },
+		{ label : 'Email' , field:'email', type:'email', required: true},
+		{ label : 'Phone', field:'phone', type: 'phone'},
+		{ field : 'comments', type : 'multiline'}
+	],
+	imageBase : 'http://demo.linqed.eu/unplugged/xcontrols-latest.nsf/'
+};
+
+xcomponents.models['company'] = {
+	name : 'Company',
+	fields : [
+		{ field : 'name', required : true},
+		{ field : 'city' },
+		{ field : 'country', read : false},
+		{ field : 'type', read : false, type : 'select', options:['Prospect', 'Customer', 'Inactive'] },
+		{ field : 'website', type : 'link' },
+		{ field : 'phone', type :'phone' }
+	],
+	imageBase : 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/'
+};
+
+xcomponents.models['note'] = {
+	name : 'Note',
+	fields : [
+		{ field : 'subject', required : true, filter : 'notesname' }, 
+		{ field : 'date', type :'date', required : true, 'default' : 'now' },
+		{ field : 'details', type : 'html', label : null }
+	],
+	imageBase : 'http://demo.linqed.eu/unplugged/xcontrols-latest.nsf/'
+};
+
 //example of setting custom headers that will be sent along with every http request
 xcomponents.addCallback( function() {
 		

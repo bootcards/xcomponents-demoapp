@@ -33,6 +33,7 @@
 
 		<xc-list 
 			title="Activities By Contact"
+			model-name="activity"
 			list-width="5" 
 			allow-add="true"
 			allow-search="false"
@@ -44,7 +45,7 @@
 			details-field="company"
 			type="accordion">
 
-			<xc-form url="/api/Activities/:id"></xc-form> 
+			<xc-form url="/api/Activities/:id" model-name="activity"></xc-form> 
 
 		</xc-list>
 

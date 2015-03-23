@@ -4,7 +4,7 @@
 <head>
 	<title>XComponents</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 
 	<!--favicon (for the demoapp only)-->
 	<link rel="shortcut icon" type="image/png" href="/images/favicon.ico">
@@ -39,7 +39,7 @@
 	<xc-layout>
 
 		<xc-list 
-			title="Cards"
+			model-name="card"
 			list-width="5" 
 			allow-add="false"
 			allow-search="false"
@@ -86,6 +86,7 @@
 
 				<xc-form ng-if="$parent.selected.id =='form'"
 					url="/api/Contacts/:id"
+					model-name="contact"
 					item-id="30233C541B56C65380257CDD0024D420" 
 					thumbnail-field="thumbnailUrl"
 					thumbnail-show-with="name"></xc-form>

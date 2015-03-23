@@ -22,7 +22,6 @@
 	<link rel="import" href="/bower_components/xcomponents/dist/includes/includes.html">
  
 	<script type="text/javascript" src="mainConfig.js"></script>
-	<script src="notes.js"></script>
 	
 </head>
 
@@ -33,7 +32,9 @@
 	<xc-layout>
 
 		<xc-list 
+			model-name="note"
 			title="Notes"
+			model-name="note"
 			list-width="5" 
 			allow-add="true"
 			order-by="date"
@@ -47,6 +48,7 @@
 			type="flat">
 
 			<xc-form 
+				model-name="note"
 				url="/api/Notes/:id" 
 				default-text="Select a note from the list"></xc-form>
 

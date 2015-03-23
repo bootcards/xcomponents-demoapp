@@ -39,6 +39,7 @@
 
 		<xc-list 
 			title="People"
+			model-name="contact"
 			list-width="5" 
 			allow-add="true"
 			order-by="lastName"
@@ -56,6 +57,7 @@
 
 			<xc-form 
 				url="/api/Contacts/:id" 
+				model-name="contact"
 				default-text="Select a contact from the list"
 				thumbnail-field="thumbnailUrl"
 				thumbnail-show-with="name"></xc-form>

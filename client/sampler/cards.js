@@ -1,4 +1,7 @@
-xcomponents.modelName = 'Card';
+
+xcomponents.models['card'] = {
+	name : 'Card'
+};
 
 xcomponents.listEntries = [
 

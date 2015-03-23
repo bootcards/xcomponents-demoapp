@@ -9,9 +9,10 @@ xcomponents.menuOptions = [
 
 xcomponents.footerTitle = "XComponents | version " + xcomponents.appVersion;
 xcomponents.footerOptions = xcomponents.menuOptions;
-xcomponents.modelName = 'Contact';
 
-xcomponents.fields = [
+xcomponents.models['contact'] = {
+  name : 'Contact',
+  fields : [
 		{ label : 'First name' , field: 'firstName', required: true, read: false},
 		{ label : 'Last name' , field: 'lastName', required: true, read: false},
 		{ field : 'name', edit: false, formula : ['firstName', 'lastName'] },
@@ -24,9 +25,9 @@ xcomponents.fields = [
 		{ label : 'Email' , field:'email', type:'email', required: true},
 		{ label : 'Phone', field:'phone', type: 'phone'},
 		{ field : 'comments', type : 'multiline'}
-	];
-
-xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcontrols-latest.nsf/';
+	],
+  imageBase : 'http://demo.linqed.eu/unplugged/xcontrols-latest.nsf/'
+};
 
 xcomponents.addCallback( function() { 
   var app = angular.module('xcomponents');

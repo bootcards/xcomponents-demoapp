@@ -26,14 +26,15 @@
 
 	<script type="text/javascript">
 
-		xcomponents.modelName = 'Settings';
-
-		xcomponents.fields = [
+		xcomponents.models['settings'] = {
+			name : 'Settings',
+			fields : [
 				{ field : 'username', required: true},
 				{ field : 'password'},
 				{ label : 'Confirm password', field : 'passwordConfirm'},
 				{ label : 'Notification interval', field : 'notificationInterval', type : 'select', options : ['Monthly', 'Weekly', 'Daily'] }
-			];
+			]
+		};
 
 	</script>
 
@@ -48,6 +49,7 @@
 		<div class="col-sm-4 col-sm-offset-4 bootcards-cards">
 
 			<xc-form
+				model-name="settings"
 				url="/api/Settings/:id" 
 				datastore-type="rest"
 				item-id="54bf766a67c1b2000083feea">

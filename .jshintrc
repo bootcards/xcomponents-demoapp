@@ -17,5 +17,5 @@
   "unused": false,
   "trailing": true,
   "sub": true,
-  "predef": ["xcontrols", "$", "angular"]
+  "predef": ["xcomponents", "$", "angular"]
 }

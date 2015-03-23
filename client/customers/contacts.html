@@ -26,7 +26,6 @@
  
  	<!-- xcomponents config -->
 	<script type="text/javascript" src="mainConfig.js"></script>
-	<script src="contacts.js"></script>
 	
 </head>
 
@@ -38,6 +37,7 @@
 
 		<xc-list 
 			title="People"
+			model-name="contact"
 			list-width="5" 
 			allow-add="true"
 			order-by="lastName"
@@ -52,6 +52,7 @@
 			infinite-scroll="true">
 
 			<xc-form 
+				model-name="contact"
 				url="/api/Contacts/:id" 
 				default-text="Select a contact from the list"
 				thumbnail-field="thumbnailUrl"

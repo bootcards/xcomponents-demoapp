@@ -1,6 +1,6 @@
-xcomponents.modelName = 'Contact';
-
-xcomponents.fields = [
+xcomponents.models['contact'] = {
+	name : 'Contact',
+	fields : [
 		{ label : 'First name *' , field: 'firstName', required: true, read: false},
 		{ label : 'Last name *' , field: 'lastName', required: true, read: false},
 		{ field : 'name', edit: false, formula : ['firstName', 'lastName'] },
@@ -14,6 +14,6 @@ xcomponents.fields = [
 		{ label : 'Phone', field:'phone', type: 'phone'},
 		{ label : 'Last contact', field : 'lastContact', type : 'date', default : 'now'},
 		{ field : 'comments', type : 'multiline'}
-	];
-
-xcomponents.imageBase = 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/';
+	],
+	imageBase : 'http://demo.linqed.eu/unplugged/xcontrolssampler_v1_2.nsf/'
+};
