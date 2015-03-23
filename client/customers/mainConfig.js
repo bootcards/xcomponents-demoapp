@@ -95,48 +95,6 @@ xcomponents.addCallback( function() {
 		};
 	});
 
-	app.config(['$routeProvider', function($routeProvider) {
-
-console.log('set up router');
-
-		  $routeProvider
-			 .when('/login', {
-			        templateUrl: 'partials/test.html',
-			        controller: 'PhoneListCtrl'
-			      })
-
-		    .otherwise({
-		      redirectTo: '/home'
-		    });
-		}]);
-	
-	
-	app.run(function($rootScope, $location, $cookieStore) {
-		  // register listener to watch route changes
-		  
-			if ($rootScope.apikey == null) {
-		  		$location.path("/login");
-		    }
-
-		  $rootScope.$on("$routeChangeStart", function(event, next, current) {
-		  	console.log('rcs');
-		    if ($cookieStore.get('apikey')){
-		      $rootScope.apikey = $cookieStore.get('apikey');
-		      $rootScope.user = $cookieStore.get('user');
-		    }
-		    if ($rootScope.apikey == null) {
-		      // no logged user, we should be going to #login
-		      if (next.templateUrl == "/login/login.html") {
-		        // already going to #login, no redirect needed
-		      } else {
-		        // not going to #login, we should redirect now
-		        $location.path("/login");
-		      }
-		    }
-		  });
-		});
-
-
 	app.run( [ '$http', '$rootScope', function($http, $rootScope) {
 
 		//inject custom headers for $http calls
