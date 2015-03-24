@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>XComponents</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<!--set the hidden class here, so everything is immediately hidden-->
+	<style type="text/css">
+		.hidden {
+			display:none;
+		}
+	</style>
+	
+	<script type="text/javascript" src="/bower_components/xcomponents/dist/js/xc-base.js"></script>
+	<script type="text/javascript" src="/bower_components/webcomponentsjs/HTMLImports.min.js"></script>
+	<link rel="import" href="/bower_components/xcomponents/dist/includes/includes.html">
+
+	<script>
+	xcomponents.addCallback( function() {
+
+		xcomponents.models['myContact'] = {
+			name : 'Person',
+			fields : [
+				{ field : 'email', required : true }
+			]
+		};
+
+		var app = angular.module('xcomponents');
+
+		app.directive('addList', function( $compile) {
+
+			return function(scope, element, attrs){
+				element.bind("click", function(){
+					scope.count++;
+					angular.element(document.getElementById('container'))
+					.append(
+						$compile("<xc-list type='flat' url='/api/Contacts' model-name='myContact' summary-field='email'></xc-list>")(scope)
+						);
+				});
+			};
+
+		});
+
+		var imgCount = 1;
+
+		app.directive('addImage', function( $compile) {
+
+			return function(scope, element, attrs){
+				element.bind("click", function(){
+					scope.count++;
+					angular.element(document.getElementById('container'))
+					.append(
+						$compile("<xc-file title='A kitten'" +
+		 			" preview-url=\"http://placekitten.com/600/30" + imgCount + "\"></xc-file>")(scope)
+						);
+
+					imgCount ++;
+
+				});
+			};
+
+		});
+
+
+	});
+
+	</script>
+
+</head>
+
+<body ng-controller="xcController" class="hidden">
+
+	<xc-header title="Dynamic add"></xc-header>
+
+	<xc-layout>
+
+		<div class="bootcards-cards">
+
+			<div class="col-sm-12">
+
+				<button add-list>add a list</button>
+				<button add-image>add an image</button>
+
+				<div id="container"></div>
+
+			</div>
+		
+		</div>
+
+	</xc-layout>
+	
+</body></html>
