@@ -12,6 +12,6 @@
     "name": "storage",
     "connector": "loopback-component-storage",
     "provider": "filesystem",
-    "root": "/tmp/xcomponents"
+    "root": "/data-xcomponents"
   }
 }
